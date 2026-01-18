@@ -1,5 +1,7 @@
-![Skypy](./docs/logo/light.svg#gh-light-mode-only)
-![Skypy](./docs/logo/dark.svg#gh-dark-mode-only)
+<p align="center">
+    ![Skypy](./docs/logo/light.svg#gh-light-mode-only)
+    ![Skypy](./docs/logo/dark.svg#gh-dark-mode-only)
+</p>
 
 <p align="center">
     <b>Skypy - open-source reactive database</b>. <br />
