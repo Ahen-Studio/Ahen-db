@@ -1,36 +1,55 @@
-name: Upload Python Package
+name: Release on GitHub + on PyPI
 
 on:
-  release:
-    types: [published]
-  workflow_dispatch:
-
-permissions:
-  contents: read
+  workflow_call:
+    inputs:
+      pypi-url:
+        required: true
+        type: string
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.x"
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install build twine
-
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Check git tag vs package version
+        run: python3 -m pip install --upgrade setuptools && .github/workflows/release-check-version-tag
       - name: Build package
-        run: python -m build
+        run: python3 -m pip install --upgrade build && python3 -m build
+      - name: Upload dist
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: dist/
 
-      - name: Publish package to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: |
-          twine upload dist/*
+  github-release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      - name: Create release on GitHub
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*
+
+  pypi-publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: ${{ inputs.pypi-url }}
+    permissions:
+      id-token: write  # IMPORTANT: this permission is mandatory for trusted publishing
+    steps:
+      - name: Download dist
+        uses: actions/download-artifact@v3
+        with:
+          name: dist
+          path: dist/
+      - name: Publish package distributions to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
