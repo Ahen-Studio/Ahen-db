@@ -109,14 +109,15 @@ class Database:
 
     def add_columns_if_needed(self, table_name: str, columns: List[str]) -> None:
         """
-        Add columns to a table if they don't exist.
-
-        Args:
-            table_name: Name of the table
-            columns: List of column names to add
+        Ensure the given columns exist on a table by adding any that are missing as TEXT columns; ignores the reserved columns "id" and "created_at". Changes are committed to the database.
+        
+        Parameters:
+            table_name (str): Name of the target table.
+            columns (List[str]): Column names to ensure exist on the table.
         """
 
         existing_columns = set(self.get_table_columns(table_name))
+        
         cursor = self.conn.cursor()
 
         for column in columns:
@@ -126,18 +127,26 @@ class Database:
         self.conn.commit()
 
     def insert_data(
-        self, table_name: str, data: Dict[str, Any], generate_id: bool = True
+        self, 
+        table_name: str, 
+        data: Dict[str, Any], 
+        generate_id: bool = True
     ) -> str:
         """
-        Insert data into a table.
-
-        Args:
-            table_name: Name of the table
-            data: Dictionary of column names and values
-            generate_id: Whether to generate UUID automatically
-
+        Insert a row into the specified table.
+        
+        If generate_id is True, a UUID is assigned to the `id` field. Ensures a `created_at` ISO timestamp is present and adds any missing columns (excluding `id` and `created_at`) before inserting.
+        
+        Parameters:
+            table_name (str): Name of the table to insert into.
+            data (Dict[str, Any]): Mapping of column names to values; may be modified to include generated `id` and `created_at`.
+            generate_id (bool): Whether to generate and set an `id` for the row.
+        
         Returns:
-            The ID of the inserted row
+            str: The `id` of the inserted row.
+        
+        Raises:
+            TableNotFoundError: If the specified table does not exist.
         """
 
         if not self.table_exists(table_name):
@@ -172,18 +181,25 @@ class Database:
         return data["id"]
 
     def search(
-        self, table_name: str, index: Optional[str] = None, **filters
+        self, table_name: str, 
+        index: Optional[str] = None, 
+        **filters
     ) -> List[Dict[str, Any]]:
         """
-        Search for data in a table.
-
-        Args:
-            table_name: Name of the table
-            index: Value to search for in any column (searches all columns if column not specified)
-            **filters: Additional filters as keyword arguments (column name = value)
-
+        Searches rows in a table using an optional index value and additional column filters.
+        
+        If `index` is provided it is matched against all non-standard columns (excluding "id" and "created_at"). Additional keyword filters are combined with logical AND; filter values that are lists are treated as IN clauses.
+        
+        Parameters:
+            table_name (str): Name of the table to search.
+            index (Optional[str]): Value to match across all non-standard columns when provided.
+            **filters: Column-specific filters as keyword arguments (column=value). List values are treated as membership (IN) filters.
+        
         Returns:
-            List of dictionaries containing matching rows
+            List[Dict[str, Any]]: A list of rows as dictionaries keyed by column name.
+        
+        Raises:
+            TableNotFoundError: If the specified table does not exist.
         """
 
         if not self.table_exists(table_name):
@@ -225,6 +241,7 @@ class Database:
         query = f"SELECT * FROM [{table_name}] WHERE {where_clause}"
 
         cursor = self.conn.cursor()
+        
         cursor.execute(query, params)
 
         # Convert rows to dictionaries
@@ -246,7 +263,13 @@ class Database:
 
     def get_all_data(self, table_name: str) -> List[Dict[str, Any]]:
         """
-        Get all data from a table.
+        Retrieve all rows from the specified table as a list of dictionaries.
+        
+        Returns:
+            List[Dict[str, Any]]: A list where each item is a row represented as a mapping from column names to values.
+        
+        Raises:
+            TableNotFoundError: If the specified table does not exist.
         """
 
         if not self.table_exists(table_name):
@@ -262,9 +285,62 @@ class Database:
 
         return results
 
+    def delete_data(self, table_name: str, **filters) -> int:
+        """
+        Delete rows from a table that match the provided column filters.
+        
+        Filters supplied as keyword arguments are applied as equality checks; if a filter value is a list, it is used with an SQL IN clause. Column names are taken from the keyword names and values are cast to strings before execution.
+        
+        Parameters:
+            table_name (str): Name of the table to delete rows from.
+            **filters: Column filters where a scalar value means equality and a list value produces an IN clause.
+        
+        Returns:
+            int: Number of rows deleted.
+        
+        Raises:
+            TableNotFoundError: If the specified table does not exist.
+            ValueError: If no filters are provided (to prevent deleting all rows).
+        """
+
+        if not self.table_exists(table_name):
+            raise TableNotFoundError(f"Table '{table_name}' not found")
+
+        if not filters:
+            # Safety check - don't allow deleting all rows without explicit filters
+            raise ValueError("Cannot delete without filters. Use filters to specify which rows to delete.")
+
+        conditions = []
+        params = []
+
+        # Build WHERE clause from filters
+        for column, value in filters.items():
+            # Handle list values - use IN clause
+            if isinstance(value, list) and len(value) > 0:
+                placeholders = ", ".join(["?" for _ in value])
+                conditions.append(f"[{column}] IN ({placeholders})")
+                params.extend([str(v) for v in value])
+            else:
+                conditions.append(f"[{column}] = ?")
+                params.append(str(value))
+
+        # Build DELETE query
+        where_clause = " AND ".join(conditions)
+        query = f"DELETE FROM [{table_name}] WHERE {where_clause}"
+
+        cursor = self.conn.cursor()
+
+        cursor.execute(query, params)
+        self.conn.commit()
+
+        return cursor.rowcount
+
     def _ensure_config_table(self) -> None:
         """
-        Create the system table for storing table configurations if it doesn't exist.
+        Ensure the system configuration table exists.
+        
+        Creates the `_skypy_config` table if absent with columns:
+        `table_name` (TEXT primary key), `config` (TEXT NOT NULL), and `created_at` (TEXT NOT NULL).
         """
 
         cursor = self.conn.cursor()
@@ -359,22 +435,14 @@ class Database:
 
     def create_table_from_config(self, table_name: str, config: Dict[str, Any]) -> None:
         """
-        Create a table based on configuration.
-
-        Args:
-            table_name: Name of the table
-            config: Configuration dictionary with columns and types
-
+        Create a new table from a configuration and store that configuration in the system config table.
+        
+        Parameters:
+            table_name (str): Name of the table to create.
+            config (Dict[str, Any]): Mapping of column names to types (e.g., "str", int, "auto"). The key "id" is reserved and ignored in the configuration; the created table will always include an `id` primary key and a non-null `created_at` column.
+        
         Raises:
-            TableAlreadyExistsError: If table already exists
-
-        Example:
-            config = {
-                "title": "str",
-                "user_id": str,
-                "content": str,
-                "id": "auto"
-            }
+            TableAlreadyExistsError: If a table with the given name already exists.
         """
 
         if self.table_exists(table_name):
@@ -406,21 +474,22 @@ class Database:
         self.conn.commit()
 
     def validate_data_with_config(
-        self, table_name: str, data: Dict[str, Any]
+        self,
+        table_name: str,
+        data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
-        Validate data against the table's configuration.
-        Converts values to the correct type based on configuration.
-
-        Args:
-            table_name: Name of the table
-            data: Data dictionary to validate
-
+        Validate and coerce fields in `data` according to the table's stored configuration.
+        
+        Parameters:
+            table_name (str): Table whose configuration will be used for validation.
+            data (Dict[str, Any]): Mapping of column names to values to validate and convert.
+        
         Returns:
-            Validated data dictionary with converted values
-
+            Dict[str, Any]: A dictionary with the same keys as `data` (except keys with type `"auto"` or `"id"` are skipped) where values have been converted to the configured types.
+        
         Raises:
-            ValueError: If data validation fails
+            ValueError: If a value cannot be converted to the configured `int` or `float` type.
         """
 
         config = self.get_table_config(table_name)
@@ -471,13 +540,14 @@ class Database:
 
     def delete_table_config(self, table_name: str) -> None:
         """
-        Delete a table's configuration from the system table.
-
-        Args:
-            table_name: Name of the table
+        Remove the saved configuration for a table from the internal system config table.
+        
+        Parameters:
+            table_name (str): Name of the table whose configuration will be removed.
         """
 
         cursor = self.conn.cursor()
+
         cursor.execute("DELETE FROM _skypy_config WHERE table_name = ?", (table_name,))
         self.conn.commit()
 

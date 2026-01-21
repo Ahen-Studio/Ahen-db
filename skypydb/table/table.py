@@ -115,7 +115,28 @@ class Table:
     
     def get_all(self) -> List[Dict[str, Any]]:
         """
-        Get all data from the table.
+        Retrieve all rows from the table.
+        
+        Returns:
+            A list of rows, where each row is a dict mapping column names to their values.
         """
 
         return self.db.get_all_data(self.table_name)
+    
+    def delete(self, **filters) -> int:
+        """
+        Delete rows from the table that match the provided column filters.
+        
+        Parameters:
+            **filters: Column-value pairs used to select rows. Each value may be a scalar (matched by equality) or a list (treated as an IN set).
+        
+        Returns:
+            Number of rows deleted.
+        """
+        
+        # Convert list filters if needed
+        processed_filters = {}
+        for key, value in filters.items():
+            processed_filters[key] = value
+        
+        return self.db.delete_data(self.table_name, **processed_filters)

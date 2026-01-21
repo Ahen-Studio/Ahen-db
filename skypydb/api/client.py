@@ -3,6 +3,8 @@ Client API for SkypyDB.
 """
 
 import threading
+import time
+import os
 from typing import Any, Dict, Optional, Union
 
 from ..db.database import Database
@@ -16,15 +18,20 @@ class Client:
     """
 
     def __init__(
-        self, path: str, dashboard_port: int = 3000, auto_start_dashboard: bool = True
+        self,
+        path: str, 
+        dashboard_port: int = 3000, 
+        auto_start_dashboard: bool = True
     ):
         """
-        Initialize SkypyDB client.
-
-        Args:
-            path: Path to SQLite database file
-            dashboard_port: Port for the dashboard (default: 3000)
-            auto_start_dashboard: Whether to automatically start dashboard
+        Create a Client configured to use the given SQLite database file and optional dashboard.
+        
+        Creates and stores a Database instance and a dashboard thread placeholder. If auto_start_dashboard is True, the dashboard will be started in a background thread.
+        
+        Parameters:
+            path (str): Filesystem path to the SQLite database file.
+            dashboard_port (int): TCP port for the dashboard UI.
+            auto_start_dashboard (bool): If True, start the dashboard in a background thread.
         """
 
         self.path = path
@@ -75,13 +82,10 @@ class Client:
 
     def delete_table(self, table_name: str) -> None:
         """
-        Delete a table.
-
-        Args:
-            table_name: Name of the table to delete
-
+        Delete the specified table from the database and remove its associated table configuration.
+        
         Raises:
-            TableNotFoundError: If table doesn't exist
+            TableNotFoundError: If the table does not exist.
         """
 
         self.db.delete_table(table_name)
@@ -90,39 +94,22 @@ class Client:
         self.db.delete_table_config(table_name)
 
     def create_table_from_config(
-        self, config: Dict[str, Any], table_name: Optional[str] = None
+        self,
+        config: Dict[str, Any],
+        table_name: Optional[str] = None
     ) -> Union["Table", Dict[str, "Table"]]:
         """
-        Create table(s) from configuration.
-
-        Args:
-            config: Configuration dictionary with table definitions
-                    Format: {"table_name": {"col1": "str", "col2": "int", "id": "auto"}, ...}
-            table_name: If provided, only create this specific table from the config
-
+        Create one or more tables from a configuration mapping.
+        
+        Parameters:
+            config (Dict[str, Any]): Mapping of table names to column definitions, e.g. {"users": {"name": "str", "id": "auto"}, ...}.
+            table_name (Optional[str]): If provided, create only this table from the config.
+        
         Returns:
-            Table instance if table_name is provided, otherwise dictionary of table_name -> Table
-
-        Example:
-            config = {
-                "users": {
-                    "name": "str",
-                    "email": "str",
-                    "age": int,
-                    "id": "auto"
-                },
-                "posts": {
-                    "title": "str",
-                    "content": "str",
-                    "id": "auto"
-                }
-            }
-
-            # Create all tables
-            table = client.create_table_from_config(config)
-
-            # Create only 'users' table
-            table = client.create_table_from_config(config, table_name="users")
+            Table | Dict[str, Table]: A Table instance for the created table when `table_name` is provided; otherwise a dict mapping each created table name to its Table instance.
+        
+        Raises:
+            KeyError: If `table_name` is provided but not present in `config`.
         """
 
         if table_name is not None:
@@ -203,16 +190,25 @@ class Client:
 
     def start_dashboard(self) -> None:
         """
-        Start the dashboard in a separate thread.
+        Launches the dashboard web UI in a background thread.
+        
+        If a dashboard thread is already running, this is a no-op. Sets the environment
+        variables SKYPYDB_PATH and SKYPYDB_PORT and starts a daemon thread that runs the
+        dashboard application (via uvicorn) bound to 127.0.0.1 on the client's
+        dashboard_port. Waits briefly to allow the server to start; startup exceptions
+        are printed to stdout.
         """
 
         if self._dashboard_thread and self._dashboard_thread.is_alive():
             return  # Dashboard already running
 
         def run_dashboard():
-            import os
-
             # Set environment variables before importing app
+            """
+            Starts the dashboard web server using the client's configured database path and port.
+            
+            Sets the `SKYPYDB_PATH` and `SKYPYDB_PORT` environment variables, imports the dashboard ASGI app, and runs it with Uvicorn on 127.0.0.1 at the configured port. Any exception raised during startup is caught and printed.
+            """
             os.environ["SKYPYDB_PATH"] = self.path
             os.environ["SKYPYDB_PORT"] = str(self.dashboard_port)
 
@@ -234,21 +230,34 @@ class Client:
         self._dashboard_thread.start()
 
         # Give the dashboard a moment to start
-        import time
-
         time.sleep(0.5)
 
-    def stop_dashboard(self) -> None:
+    def wait(self) -> None:
         """
-        Stop the dashboard.
+        Block the process while the dashboard thread is running and close the client on KeyboardInterrupt.
+        
+        If a dashboard thread is alive, prints the dashboard URL and a prompt, then sleeps until a KeyboardInterrupt is received, at which point the client's resources are closed. If no dashboard is running, prints a message indicating how to start it.
         """
-
-        # Dashboard runs as daemon thread, will stop when main process exits
-        pass
+        
+        if self._dashboard_thread and self._dashboard_thread.is_alive():
+            # show dashboard URL
+            print(f"Dashboard is running at http://127.0.0.1:{self.dashboard_port}")
+            
+            print("Press Ctrl+C to stop...")
+            try:
+                while True:
+                    time.sleep(1)
+            except KeyboardInterrupt:
+                print("\nStopping...")
+                self.close()
+        else:
+            print("Dashboard is not running. Start it with client.start_dashboard()")
 
     def close(self) -> None:
         """
-        Close database connection.
+        Close the client's database connection.
+        
+        Closes the underlying Database instance associated with this Client.
         """
 
         self.db.close()
