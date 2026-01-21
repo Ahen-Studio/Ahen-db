@@ -48,7 +48,7 @@ pip install skypydb # python client
 
 ## What's next!
 
-- give use ideas!
+- give us ideas!
 
 ## API
 

@@ -1,4 +1,5 @@
 import skypydb
+from skypydb.errors import TableAlreadyExistsError
 
 # setup skypydb client.
 client = skypydb.Client(path="./data/skypy.db")
@@ -28,7 +29,7 @@ config = {
 # Create tables. get_table_from_config(config, table_name="all-my-documents"), delete_table_from_config(config, table_name="all-my-documents") are also available.
 try:
     table = client.create_table_from_config(config)# Create all the tables present in the config.
-except Exception:
+except TableAlreadyExistsError:
     # Tables already exist, that's fine
     pass
 
