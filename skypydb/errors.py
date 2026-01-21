@@ -7,7 +7,7 @@ class SkypyDBError(Exception):
     """
     Base exception for all SkypyDB errors.
     """
-    
+
     pass
 
 
@@ -39,5 +39,5 @@ class InvalidSearchError(SkypyDBError):
     """
     Raised when search parameters are invalid.
     """
-    
+
     pass

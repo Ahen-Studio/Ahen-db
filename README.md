@@ -13,7 +13,7 @@
       <img src="https://img.shields.io/badge/License-MIT-green.svg" alt="License">
   </a> |
   <a>
-        <img src="https://img.shields.io/github/downloads/Ahen-Studio/skypy-db/total" alt=Download>
+      <img src="https://img.shields.io/coderabbit/prs/github/Ahen-Studio/skypy-db?utm_source=oss&utm_medium=github&utm_campaign=Ahen-Studio%2Fskypy-db&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews"
   </a> |
   <a href="https://ahen.mintlify.app/" target="_blank">
       Docs
