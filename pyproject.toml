@@ -1,6 +1,6 @@
 [project]
 name = "skypydb"
-version = "0.1.0"
+version = "0.1.1"
 authors = [{name = "Ahen Studio"}]
 description = "Open-source Reactive Python database"
 readme = "README.md"
