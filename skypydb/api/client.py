@@ -245,7 +245,7 @@ class Client:
             
             try:
                 table = client.create_table("all-my-documents")
-            except Exception:
+            except TableAlreadyExistsError:
                 # Tables already exist, that's fine
                 pass
             
