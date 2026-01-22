@@ -46,9 +46,9 @@ pip install skypydb # python client
 
 - [x] code the database backend
 - [x] improve user data security
+- [ ] code a custom cli
 - [ ] Create the dashboard using Reflex
 - [ ] write the documentation
-- [ ] code a custom cli
 
 ## What's next!
 
@@ -104,8 +104,11 @@ table.add(
 )
 
 # Data is automatically decrypted when retrieved
-users = table.get_all()
-print(users[0]['ssn'])  # "123-45-6789" (decrypted)
+results = table.search(
+    index="alice"# search the corresponding data by their index
+)
+for result in results:
+    print(result)
 ```
 
 ## API

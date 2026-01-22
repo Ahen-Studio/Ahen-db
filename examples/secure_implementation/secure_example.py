@@ -8,8 +8,6 @@ load_dotenv()
 
 # Load encryption key from environment
 encryption_key = os.getenv("ENCRYPTION_KEY") # create a encryption key and make it available in .env file before using it, don't show this key to anyone
-if not encryption_key:
-    raise RuntimeError("ENCRYPTION_KEY is missing; encryption is disabled.")
 
 # Create encrypted database
 client = skypydb.Client(
@@ -35,5 +33,8 @@ table.add(
 )
 
 # Data is automatically decrypted when retrieved
-users = table.get_all()
-print(users[0]['ssn'])  # "123-45-6789" (decrypted)
+results = table.search(
+    index="alice"# search the corresponding data by their index
+)
+for result in results:
+    print(result)
