@@ -11,7 +11,7 @@ You can contribute not only with code but with bug reports, comments, questions,
 
 - You can make pull requests on [Pull Requests](https://github.com/Ahen-Studio/skypy-db/pulls)
 
-- You can report an issues on [Issues](https://github.com/Ahen-Studio/skypy-db/issues)
+- You can report an issue on [Issues](https://github.com/Ahen-Studio/skypy-db/issues)
 
 - Or you can just send a message on the chat channel [Discussions](https://github.com/Ahen-Studio/skypy-db/discussions)
 

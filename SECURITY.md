@@ -14,6 +14,6 @@ The project is currently in production
 
 - If you notice a vulnerability in our project, you can report it on github issues (https://github.com/Ahen-Studio/skypy-db/issues).
 
-- Or if you have already resolved the issue, you can submit a pull requests (https://github.com/Ahen-Studio/skypy-db/pulls).
+- Or if you have already resolved the issue, you can submit a pull request (https://github.com/Ahen-Studio/skypy-db/pulls).
 
 We would be delighted to help you make our project more secure.
