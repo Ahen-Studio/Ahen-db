@@ -1,38 +1,48 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
-  "name": "Skypydb",
+  "theme": "mint",
+  "name": "Mint Starter Kit",
   "colors": {
-    "primary": "#3b3b3b",
-    "light": "#c4c4c4",
-    "dark": "#0e0e0e"
+    "primary": "#16A34A",
+    "light": "#07C983",
+    "dark": "#15803D"
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "icon": "book-open-cover",
-          "href": "https://mintlify.com/docs"
-        },
-        {
-          "anchor": "Blog",
-          "icon": "newspaper",
-          "href": "https://mintlify.com/blog"
-        }
-      ]
-    },
     "tabs": [
       {
-        "tab": "Getting Started",
+        "tab": "Guides",
         "groups": [
           {
-            "group": "Get Started",
+            "group": "Getting started",
             "pages": [
               "index",
               "quickstart",
               "development"
+            ]
+          },
+          {
+            "group": "Customization",
+            "pages": [
+              "essentials/settings",
+              "essentials/navigation"
+            ]
+          },
+          {
+            "group": "Writing content",
+            "pages": [
+              "essentials/markdown",
+              "essentials/code",
+              "essentials/images",
+              "essentials/reusable-snippets"
+            ]
+          },
+          {
+            "group": "AI tools",
+            "pages": [
+              "ai-tools/cursor",
+              "ai-tools/claude-code",
+              "ai-tools/windsurf"
             ]
           }
         ]
@@ -41,7 +51,7 @@
         "tab": "API reference",
         "groups": [
           {
-            "group": "Guides API",
+            "group": "API documentation",
             "pages": [
               "api-reference/introduction"
             ]
@@ -57,7 +67,21 @@
           }
         ]
       }
-    ]
+    ],
+    "global": {
+      "anchors": [
+        {
+          "anchor": "Documentation",
+          "href": "https://mintlify.com/docs",
+          "icon": "book-open-cover"
+        },
+        {
+          "anchor": "Blog",
+          "href": "https://mintlify.com/blog",
+          "icon": "newspaper"
+        }
+      ]
+    }
   },
   "logo": {
     "light": "/logo/light.svg",
@@ -90,7 +114,9 @@
   },
   "footer": {
     "socials": {
-      "github": "https://github.com/Ahen-Studio/skypy-db"
+      "x": "https://x.com/mintlify",
+      "github": "https://github.com/mintlify",
+      "linkedin": "https://linkedin.com/company/mintlify"
     }
   }
 }
