@@ -6,9 +6,9 @@
 
 ## Supported Versions
 
-- Beta version are released at 0.1.x
+- Beta versions are released at 0.1.x
 
-- Stable version are released at 1.0.x
+- Stable versions are released at 1.0.x
 
 | Stable  | Supported          |
 | ------- | ------------------ |
