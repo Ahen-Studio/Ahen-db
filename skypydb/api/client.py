@@ -2,9 +2,6 @@
 Client API for Skypydb.
 """
 
-import threading
-import time
-import os
 from typing import Any, Dict, Optional, Union
 
 from ..db.database import Database
@@ -20,8 +17,6 @@ class Client:
     def __init__(
         self,
         path: str,
-        dashboard_port: int = 3000,
-        auto_start_dashboard: bool = False,
         encryption_key: Optional[str] = None,
         salt: Optional[bytes] = None,
         encrypted_fields: Optional[list] = None,
@@ -31,8 +26,6 @@ class Client:
 
         Args:
             path: Path to SQLite database file
-            dashboard_port: Port for the dashboard (default: 3000)
-            auto_start_dashboard: Whether to automatically start dashboard (disabled by default; use CLI to run dashboard)
             encryption_key: Optional encryption key for data encryption at rest.
                            If provided, sensitive data will be encrypted.
                            Generate a secure key with: EncryptionManager.generate_key()
@@ -62,13 +55,7 @@ class Client:
         """
 
         self.path = path
-        self.dashboard_port = dashboard_port
         self.db = Database(path, encryption_key=encryption_key, salt=salt, encrypted_fields=encrypted_fields)
-        self._dashboard_thread: Optional[threading.Thread] = None
-        self._dashboard_server = None
-
-        if auto_start_dashboard:
-            self.start_dashboard(block=False)
 
     def create_table(
         self,
@@ -216,6 +203,7 @@ class Client:
             }
             table = client.get_table_from_config(config, "users")
         """
+        
         if not self.db.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")
 
@@ -254,129 +242,6 @@ class Client:
 
         self.db.delete_table(table_name)
         self.db.delete_table_config(table_name)
-
-    def start_dashboard(
-        self,
-        block: bool = True,
-    ) -> None:
-        """
-        Start the dashboard in a separate thread.
-        
-        Args:
-            block: If True, blocks the main thread keeping the dashboard alive.
-                   If False, returns immediately after starting the dashboard thread.
-        
-        When block=True, press Ctrl+C to stop.
-        
-        Example:
-            # Non-blocking start (returns immediately)
-            client = skypydb.Client(path="./data/skypy.db", auto_start_dashboard=True)
-            
-            try:
-                table = client.create_table("all-my-documents")
-            except TableAlreadyExistsError:
-                # Tables already exist, that's fine
-                pass
-            
-            # Retrieve the table before adding any data.
-            table = client.get_table("all-my-documents")
-            
-            table.add(
-                title=["document"],
-                user_id=["user123"],
-                content=["this is a document"],
-                id=["auto"]# ids are automatically created by the backend
-            )
-            
-            # Or explicit non-blocking start
-            client = skypydb.Client(path="./data/skypy.db", auto_start_dashboard=False)
-            client.start_dashboard(block=False)
-            
-            # Blocking start (keeps dashboard running)
-            client.start_dashboard(block=True)  # or just client.start_dashboard()
-        """
-
-        if os.environ.get("SKYPYDB_DASHBOARD_FROM_CLI") != "1":
-            raise RuntimeError(
-                "Dashboard can only be started via the CLI command: skypydb dev"
-            )
-
-        if self._dashboard_thread and self._dashboard_thread.is_alive():
-            # Dashboard already running
-            if not block:
-                # Just return if non-blocking
-                return
-            
-            # Keep the program running so the dashboard stays active
-            print(f"Dashboard is already running at http://127.0.0.1:{self.dashboard_port}")# show dashboard URL
-            
-            print("Press Ctrl+C to stop...")
-            try:
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                print("\nStopping...")
-                self.close()
-            return
-
-        def run_dashboard():
-            # Set environment variables before importing app
-            os.environ["SKYPYDB_PATH"] = self.path
-            os.environ["SKYPYDB_PORT"] = str(self.dashboard_port)
-
-            # Import and run the app
-            from ..dashboard.dashboard.dashboard import app
-
-            # Use uvicorn to run the app
-            try:
-                import uvicorn
-
-                config = uvicorn.Config(
-                    app, host="127.0.0.1", port=self.dashboard_port, log_level="warning"
-                )
-                server = uvicorn.Server(config)
-                self._dashboard_server = server
-                server.run()
-
-            except Exception as e:
-                print(f"Error starting dashboard: {e}")
-
-        self._dashboard_thread = threading.Thread(target=run_dashboard, daemon=True)
-        self._dashboard_thread.start()
-        
-        # Give the dashboard a moment to start
-        time.sleep(0.5)
-
-        # Keep the program running so the dashboard stays active
-        print(f"Dashboard is running at http://127.0.0.1:{self.dashboard_port}")# show dashboard URL
-        
-        if block:
-            print("Press Ctrl+C to stop...")
-            try:
-                while True:
-                    time.sleep(1)
-            except KeyboardInterrupt:
-                print("\nStopping...")
-                self.close()
-
-    def stop_dashboard(
-        self,
-    ) -> None:
-        """
-        Stop the dashboard.
-        
-        This will attempt to shutdown the uvicorn server and wait for the dashboard thread to exit.
-        """
-        
-        if self._dashboard_server is not None:
-            # Signal the server to shut down
-            self._dashboard_server.should_exit = True
-            
-        if self._dashboard_thread and self._dashboard_thread.is_alive():
-            # Wait for thread to finish (with timeout)
-            self._dashboard_thread.join(timeout=5.0)
-            
-        print("Dashboard stopped.")
 
     def close(
         self,

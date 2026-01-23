@@ -1,0 +1,112 @@
+---
+title: 'Overview'
+description: 'Example to showcase API endpoints'
+---
+
+## Welcome
+
+skypy-db is a powerful reactive database. It provides several API endpoints to integrate data retrieval and manipulation into your projects.
+
+<CardGroup cols={2}>
+  <Card
+      title="Add"
+      icon="plus"
+      href="https://ahen.mintlify.app/api-guides/endpoint/add">
+    Add data to the database using the API endpoints.
+  </Card>
+  <Card
+      title="Delete"
+      icon="trash"
+      href="https://ahen.mintlify.app/api-guides/endpoint/delete">
+    Delete data from the database using the API endpoints.
+  </Card>
+  <Card
+      title="Get"
+      icon="search"
+      href="https://ahen.mintlify.app/api-guides/endpoint/get">
+    Retrieve data from the database using the API endpoints.
+  </Card>
+  <Card
+      title="Generate encryption key"
+      icon="lock"
+      href="https://ahen.mintlify.app/api-guides/endpoint/generate_key">
+    Generate an encryption key and a salt using the API endpoints.
+  </Card>
+  <Card
+      title="Encrypt data"
+      icon="key"
+      href="https://ahen.mintlify.app/api-guides/endpoint/secure">
+    Encrypt data using the API endpoints.
+  </Card>
+  <Card
+      title="Configuration"
+      icon="gear"
+      href="https://ahen.mintlify.app/api-guides/endpoint/custom_config">
+    Create a custom configuration to use the table API endpoint.
+  </Card>
+</CardGroup>
+
+## Getting Started
+
+- 1. Browse our API Endpoints examples
+- 2. Initialize the API client by using [the CLI](/cli)
+
+## Example Usage
+
+```python
+import skypydb
+from skypydb.errors import TableAlreadyExistsError
+
+# setup skypydb client.
+client = skypydb.Client(path="./data/skypy.db")
+
+# use a custom config is not required. You can use the default config by using table = client.create_table("all-my-documents")
+# config to make custom table.
+config = {
+    "all-my-documents": {
+        "title": str,
+        "user_id": str,
+        "content": str,
+        "id": "auto"
+    },
+    "all-my-documents1": {
+        "title": str,
+        "user_id": str,
+        "content": str,
+        "id": "auto"
+    },
+    "all-my-documents2": {
+        "title": str,
+        "user_id": str,
+        "content": str,
+        "id": "auto"
+    },
+}
+
+# Create tables. get_table_from_config(config, table_name="all-my-documents"), delete_table_from_config(config, table_name="all-my-documents") are also available.
+try:
+    table = client.create_table_from_config(config)# Create all the tables present in the config.
+except TableAlreadyExistsError:
+    # Tables already exist, that's fine
+    pass
+
+# Retrieve the table before adding any data.
+table = client.get_table_from_config(config, table_name="all-my-documents")
+
+# Add data to a table.
+table.add(
+    title=["document"],
+    user_id=["user123"],
+    content=["this is a document"],
+    id=["auto"]# ids are automatically created by the backend.
+)
+
+# Search results. search data assuming they are already in the table. You can also search the data by the id of the document
+results = table.search(
+    index="user123",# search the corresponding data by their index
+    title=["document"]# search the corresponding data by their title
+    #id=["***"]
+)
+for result in results:
+    print(result)
+```

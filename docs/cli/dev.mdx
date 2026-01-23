@@ -1,0 +1,40 @@
+---
+title: dev
+description: "Initialize a new project and start the dashboard"
+---
+
+Create a new skypydb project with a .env.local file containing your secret keys.
+
+**Usage:**
+
+```shell
+skypydb dev
+```
+
+## Interactive Setup
+
+The CLI guides you through selecting:
+
+- **init** - create a new project with a .env.local file containing your secret keys
+- **start dashboard** - start the dashboard for your project
+
+## Examples
+
+### Basic Usage
+
+```shell
+# Initialize in current directory
+skypydb dev
+```
+
+## Generated Project Structure
+
+```
+your-project/
+├──skypydb/
+│  │  └──_generated/
+│  │      └──skypydb.db             # SQLite database file
+│  └──schema.py                     # Python config file
+├──.env.local                       # Environment variables file containing your secret keys
+└──.gitignore                       # Git ignore file to ignore .env.local
+```

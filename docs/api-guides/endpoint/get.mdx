@@ -1,3 +1,25 @@
+---
+title: 'Get data from a table'
+description: 'Retrieve data from a table using the table API endpoint.'
+---
+
+## Overview
+
+`table.search()` is used to retrieve data from a table using the table API endpoint.
+
+<CardGroup cols={1}>
+  <Card
+    title="Search API example"
+    icon="code"
+    href="https://github.com/Ahen-Studio/skypy-db/blob/main/examples/basic_implementation/example_search.py"
+  >
+    Example code for searching data from a table using the table API endpoint.
+  </Card>
+</CardGroup>
+
+## Usage
+
+```python
 import skypydb
 from skypydb.errors import TableAlreadyExistsError
 
@@ -30,3 +52,4 @@ results = table.search(
 )
 for result in results:
     print(result)
+```

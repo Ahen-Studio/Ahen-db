@@ -1,68 +1,63 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Skypydb Docs",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#a6d2ff",
+    "light": "#ffe1a6",
+    "dark": "#ffe1a6"
   },
   "favicon": "/favicon.svg",
   "navigation": {
     "tabs": [
       {
-        "tab": "Guides",
+        "tab": "Getting started",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get Started",
             "pages": [
-              "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "getting-started/introduction",
+              "getting-started/quickstart",
+              "getting-started/basic_implementation"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Guide",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "API guide",
             "pages": [
-              "api-reference/introduction"
+              "api-guides/overview"
             ]
           },
           {
             "group": "Endpoint examples",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-guides/endpoint/add",
+              "api-guides/endpoint/delete",
+              "api-guides/endpoint/get",
+              "api-guides/endpoint/generate_key",
+              "api-guides/endpoint/encrypt",
+              "api-guides/endpoint/custom_config"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "CLI",
+        "groups": [
+          {
+            "group": " ",
+            "pages": [
+              "cli/overview"
+            ]
+          },
+          {
+            "group": "Commands",
+            "pages": [
+              "cli/dev"
             ]
           }
         ]
@@ -71,14 +66,9 @@
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "GitHub",
+          "href": "https://github.com/Ahen-Studio/skypy-db",
+          "icon": "github"
         }
       ]
     }
@@ -114,9 +104,7 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/Ahen-Studio/skypy-db"
     }
   }
 }

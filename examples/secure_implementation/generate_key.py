@@ -1,3 +1,6 @@
+# you can generate a secure encryption key and salt using the cli
+# or generate a secure encryption key and salt using the this example code
+
 from skypydb.security import EncryptionManager
 
 # Generate a secure encryption key

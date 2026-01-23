@@ -46,7 +46,7 @@ pip install skypydb # python client
 
 - [x] code the database backend
 - [x] improve user data security
-- [ ] code a custom cli
+- [x] code a custom cli
 - [ ] Create the dashboard using Reflex
 - [ ] write the documentation
 
@@ -56,22 +56,13 @@ pip install skypydb # python client
 
 ## Cli
 
-- use the cli to initialize your database with one simple command
+- use the cli to initialize your database and launch the dashboard with one simple command
 
 ```bash
-skypydb init
+skypydb dev
 ```
 
-- run this command in your terminal it will create a .env.local file containing an encryption key and a salt key to encrypt your data
-
----
-
-- use the cli to access the dashboard
-
-```bash
-skypydb dev --allow-dashboard
-```
-- run this command in your terminal with the required --allow-dashboard flag to start the dashboard with only the project data
+- run this command in your terminal
 
 ## Secure Implementation
 
@@ -148,7 +139,7 @@ import skypydb
 from skypydb.errors import TableAlreadyExistsError
 
 # setup skypydb client.
-client = skypydb.Client(path="./data/skypy.db", auto_start_dashboard=False)
+client = skypydb.Client(path="./data/skypy.db")
 
 # config to make custom table.
 config = {
@@ -190,8 +181,6 @@ table.add(
     id=["auto"]# ids are automatically created by the backend.
 )
 
-# Start the Dashboard (blocking mode keeps it running)
-client.start_dashboard(block=True)
 ```
 
 - use the api without a custom config
@@ -201,7 +190,7 @@ import skypydb
 from skypydb.errors import TableAlreadyExistsError
 
 # setup skypydb client.
-client = skypydb.Client(path="./data/skypy.db", auto_start_dashboard=False)
+client = skypydb.Client(path="./data/skypy.db")
 
 # Create table. get_table, delete_table are also available.
 try:
@@ -221,60 +210,6 @@ table.add(
     id=["auto"]# ids are automatically created by the backend
 )
 
-# Start the Dashboard (blocking mode keeps it running)
-client.start_dashboard(block=True)
-```
-
-## Dashboard
-
-Start the dashboard to view your data in real time. It will remain active after your operations:
-
-```python
-import skypydb
-
-# Dashboard will auto-start in non-blocking mode by default
-client = skypydb.Client(path="./data/skypy.db")
-
-# Or explicitly disable auto-start and start it later with blocking mode
-client = skypydb.Client(path="./data/skypy.db", auto_start_dashboard=False)
-
-# ... your operations here ...
-
-# Start the Dashboard (blocking mode keeps it running)
-client.start_dashboard(block=True)  # Dashboard accessible at http://127.0.0.1:3000
-```
-
-**Dashboard options:**
-
-```python
-# Change the dashboard port
-client = skypydb.Client(
-    path="./data/skypy.db",
-    dashboard_port=8080,# Change the port of the dashboard
-    auto_start_dashboard=False
-)
-
-# ... your operations here ...
-
-# Start the Dashboard in blocking mode (keeps the program running)
-client.start_dashboard(block=True)
-
-# Or use non-blocking mode to continue with other operations
-client.start_dashboard(block=False)
-```
-
-```python
-# Disable auto-start
-client = skypydb.Client(
-    path="./data/skypy.db",
-    auto_start_dashboard=False
-)
-
-# Start manually later
-client.start_dashboard(block=False)
-
-# Kill the dashboard later
-client.stop_dashboard()
 ```
 
 Learn more on our [Docs](https://ahen.mintlify.app/)

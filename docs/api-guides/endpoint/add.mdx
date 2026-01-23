@@ -1,3 +1,25 @@
+---
+title: 'Add data to a table'
+description: 'Example code for adding data to a table using the table API endpoint.'
+---
+
+## Overview
+
+`table.add()` is used to add data to a table using the table API endpoint.
+
+<CardGroup cols={1}>
+  <Card
+    title="Add API example"
+    icon="code"
+    href="https://github.com/Ahen-Studio/skypy-db/blob/main/examples/basic_implementation/example_without_a_custom_config.py"
+  >
+    Example code for adding data to a table using the table API endpoint.
+  </Card>
+</CardGroup>
+
+## Usage
+
+```python
 import skypydb
 from skypydb.errors import TableAlreadyExistsError
 
@@ -21,3 +43,4 @@ table.add(
     content=["this is a document"],
     id=["auto"]# ids are automatically created by the backend
 )
+```

@@ -1,0 +1,37 @@
+---
+title: 'Generate encryption key'
+description: 'Generate encryption key for secure data storage'
+---
+
+<Note>
+  You can use the cli to generate a secure encryption key and salt. If you don't want to use the cli, you can use the example code provided below.
+</Note>
+
+## Overview
+
+`EncryptionManager.generate_key()` and `EncryptionManager.generate_salt()` are used to generate encryption key for secure data storage.
+
+<CardGroup cols={1}>
+  <Card
+    title="Generate encryption key API example"
+    icon="code"
+    href="https://github.com/Ahen-Studio/skypy-db/blob/main/examples/secure_implementation/generate_key.py"
+  >
+    Example code for generating encryption key using the EncryptionManager API endpoint.
+  </Card>
+</CardGroup>
+
+## Usage
+
+```python
+# you can generate a secure encryption key and salt using the cli
+# or generate a secure encryption key and salt using the this example code
+
+from skypydb.security import EncryptionManager
+
+# Generate a secure encryption key
+encryption_key = EncryptionManager.generate_key()
+salt = EncryptionManager.generate_salt()
+print(encryption_key) # don't show this key to anyone
+print(salt) # don't show this salt to anyone
+```

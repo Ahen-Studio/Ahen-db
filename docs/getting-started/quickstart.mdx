@@ -1,0 +1,87 @@
+---
+title: "Quickstart"
+description: "Start Build with skypy-db"
+---
+
+This quickstart guide will help you build your first project using skypy-db.
+
+**Two steps**: Installation → building
+
+## Step 1: Installation
+
+### Prerequisites
+
+**Environment**
+
+- Python 3.11 or later
+
+**API Keys Features**
+
+This quickstart uses three API endpoints to build any project:
+
+<CardGroup cols={3}>
+    <Card
+        title="Add"
+        icon="plus"
+        href="https://ahen.mintlify.app/api-guides/endpoint/add">
+      Add data to the database using the API endpoints.
+    </Card>
+    <Card
+        title="Delete"
+        icon="trash"
+        href="https://ahen.mintlify.app/api-guides/endpoint/delete">
+      Delete data from the database using the API endpoints.
+    </Card>
+    <Card
+        title="Get"
+        icon="search"
+        href="https://ahen.mintlify.app/api-guides/endpoint/get">
+      Retrieve data from the database using the API endpoints.
+    </Card>
+</CardGroup>
+
+### Setup
+
+- install dependencies
+
+```bash
+pip install skypydb
+```
+
+## Step 2: Building
+
+- add a data to the database using the API endpoints.
+
+```python
+# Add data to a table.
+table.add(
+    title=["document"],
+    user_id=["user123"],
+    content=["this is a document"],
+    id=["auto"]# ids are automatically created by the backend.
+)
+```
+
+- delete a data from the database using the API endpoints.
+
+```python
+# delete data on the table assuming they are already in the table.
+table.delete(
+    title=["document"],
+    user_id=["user123"],
+    content=["this is a document"],
+)
+```
+
+- search data from the database using the API endpoints.
+
+```python
+# Search results. search data assuming they are already in the table. You can also search the data by the id of the document
+results = table.search(
+    index="user123",# search the corresponding data by their index
+    title=["document"]# search the corresponding data by their title
+    #id=["***"]
+)
+for result in results:
+    print(result)
+```
