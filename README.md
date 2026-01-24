@@ -39,7 +39,7 @@ pip install skypydb # python client
 
 - Security, Input Validation: AES-256-GCM encryption for data at rest with selective field encryption, automatic protection against SQL injection attacks
 
-- CLI: command line interface to initialize your database
+- CLI: command line interface to initialize your database and launch the dashboard with one simple command
 
 - Observable: Dashboard with real-time data, metrics, and query inspection
 
@@ -49,6 +49,7 @@ pip install skypydb # python client
 
 - [ ] Improve CLI: add --help/--version and generate schema.py + skypydb.db under _generated
 - [ ] Create the dashboard using Reflex
+- [ ] update the documentation
 
 ## What's next!
 
