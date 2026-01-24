@@ -41,7 +41,7 @@ class Database:
         self.path = path
         self.encryption_key = encryption_key
         self.salt = salt
-        self.encrypted_fields = encrypted_fields
+        self.encrypted_fields = encrypted_fields if encrypted_fields is not None else []
 
         # Initialize encryption manager
         self.encryption = EncryptionManager(encryption_key=encryption_key, salt=salt)
@@ -732,17 +732,10 @@ class Database:
             return data
 
         # Determine which fields to encrypt
-        fields_to_encrypt = []
-        
-        if self.encrypted_fields is not None:
-            # Use explicitly specified fields
-            fields_to_encrypt = self.encrypted_fields
-        else:
-            # Encrypt all fields except id and created_at
-            fields_to_encrypt = [
-                key for key in data.keys() 
-                if key not in ("id", "created_at")
-            ]
+        fields_to_encrypt = [
+            key for key in data.keys() 
+            if key in self.encrypted_fields
+        ]
 
         return self.encryption.encrypt_dict(data, fields_to_encrypt)
 
@@ -764,17 +757,10 @@ class Database:
             return data
 
         # Determine which fields to decrypt
-        fields_to_decrypt = []
-        
-        if self.encrypted_fields is not None:
-            # Use explicitly specified fields
-            fields_to_decrypt = self.encrypted_fields
-        else:
-            # Decrypt all fields except id and created_at
-            fields_to_decrypt = [
-                key for key in data.keys() 
-                if key not in ("id", "created_at")
-            ]
+        fields_to_decrypt = [
+            key for key in data.keys() 
+            if key in self.encrypted_fields
+        ]
 
         return self.encryption.decrypt_dict(data, fields_to_decrypt)
 

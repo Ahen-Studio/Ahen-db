@@ -99,6 +99,7 @@ class OptionalValidator(Validator):
         """
         
         self.validator = validator
+        self.optional = True
     
     def validate(self, value: Any) -> bool:
         """
