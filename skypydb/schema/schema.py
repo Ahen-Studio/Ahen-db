@@ -66,13 +66,20 @@ class TableDefinition:
             row_data: Dictionary of column names to values
             
         Raises:
-            ValueError: If validation fails
+            ValueError: If validation fails or required columns are missing
         """
         
         # Check all required columns are present
         for col_name, validator in self.columns.items():
             if col_name not in row_data:
-                continue  # Optional columns or later validation
+                # Check if the column is optional or required
+                is_optional = getattr(validator, 'optional', False)
+                if is_optional:
+                    continue
+                else:
+                    raise ValueError(
+                        f"Missing required column: '{col_name}'"
+                    )
             
             value = row_data[col_name]
             if not validator.validate(value):

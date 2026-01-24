@@ -19,7 +19,7 @@ client = skypydb.Client(
     path="./skypydb/skypydb.db",
     encryption_key=encryption_key,
     salt=salt_bytes,
-    encrypted_fields=["user_id"]  # Optional: encrypt only sensitive fields
+    encrypted_fields=["message"]  # Optional: encrypt only sensitive fields
 )
 
 # All operations work the same - encryption is transparent!
@@ -34,8 +34,8 @@ error_table = tables["error"]
 success_table.add(
     component="AuthService",
     action="login",
-    message="User logged in successfully",
-    user_id="user123" # only this field is encrypted if encrypted_fields is not None
+    message="User logged in successfully", # only this field is encrypted if encrypted_fields is not None
+    user_id="user123"
 )
 
 # Data is automatically decrypted when retrieved
@@ -43,5 +43,5 @@ user_success_logs = success_table.search(
     index="by_user",
     user_id="user123"
 )
-for user_success_logs in user_success_logs:
-    print(user_success_logs)
+for user_success_log in user_success_logs:
+    print(user_success_log)

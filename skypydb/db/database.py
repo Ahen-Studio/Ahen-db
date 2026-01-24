@@ -41,7 +41,7 @@ class Database:
         self.path = path
         self.encryption_key = encryption_key
         self.salt = salt
-        self.encrypted_fields = encrypted_fields or []
+        self.encrypted_fields = encrypted_fields
 
         # Initialize encryption manager
         self.encryption = EncryptionManager(encryption_key=encryption_key, salt=salt)
@@ -593,15 +593,8 @@ class Database:
             validator_repr = repr(validator)
             
             # Map validator repr to config type
-            if "v.string()" in validator_repr:
-                config[col_name] = "str"
-            elif "v.int64()" in validator_repr:
-                config[col_name] = "int"
-            elif "v.float64()" in validator_repr:
-                config[col_name] = "float"
-            elif "v.boolean()" in validator_repr:
-                config[col_name] = "bool"
-            elif "v.optional(" in validator_repr:
+            # Check for optional first before checking inner types
+            if "v.optional(" in validator_repr:
                 # Extract the base type from optional
                 if "v.string()" in validator_repr:
                     config[col_name] = {"type": "str", "optional": True}
@@ -611,6 +604,16 @@ class Database:
                     config[col_name] = {"type": "float", "optional": True}
                 elif "v.boolean()" in validator_repr:
                     config[col_name] = {"type": "bool", "optional": True}
+                else:
+                    config[col_name] = {"type": "str", "optional": True}
+            elif "v.string()" in validator_repr:
+                config[col_name] = "str"
+            elif "v.int64()" in validator_repr:
+                config[col_name] = "int"
+            elif "v.float64()" in validator_repr:
+                config[col_name] = "float"
+            elif "v.boolean()" in validator_repr:
+                config[col_name] = "bool"
             else:
                 config[col_name] = "str"  # Default
 

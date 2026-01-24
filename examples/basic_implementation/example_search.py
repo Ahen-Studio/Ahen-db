@@ -18,5 +18,5 @@ user_success_logs = success_table.search(
     index="by_user",
     user_id="user123"
 )
-for user_success_logs in user_success_logs:
-    print(user_success_logs)
+for user_success_log in user_success_logs:
+    print(user_success_log)
