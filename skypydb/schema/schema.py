@@ -205,6 +205,7 @@ class Schema:
         return list(self.tables.keys())
 
 
+# define a table with its columns and types
 def defineTable(
     columns: Dict[str, Validator],
 ) -> TableDefinition:
