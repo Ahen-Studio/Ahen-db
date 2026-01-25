@@ -47,7 +47,7 @@ def get_table_data(
         db.close()
 
 
-# retrieve a table with there columms names
+# retrieve a table with their column names
 def get_table_schema(
     table_name: str,
 ) -> List[str]:

@@ -128,18 +128,15 @@ class Client:
         # Create all tables from schema
         created_tables: Dict[str, Table] = {}
         table_names = schema.get_all_table_names()
-
+        existing = [name for name in table_names if self.db.table_exists(name)]
+        if existing:
+            raise TableAlreadyExistsError(
+                f"Tables already exist in the database: {', '.join(existing)}"
+            )
         for table_name in table_names:
             table_def = schema.get_table_definition(table_name)
             if table_def is None:
                 continue
-
-            # Check if table already exists
-            if self.db.table_exists(table_name):
-                raise TableAlreadyExistsError(
-                    f"Table '{table_name}' already exists in the database"
-                )
-
             # Create table with schema definition
             self.db.create_table_from_schema(table_name, table_def)
             created_tables[table_name] = Table(self.db, table_name)

@@ -1,8 +1,8 @@
 [project]
 name = "skypydb"
-version = "0.1.6"
+version = "0.1.7"
 authors = [{name = "Ahen Studio"}]
-description = "Open-source Reactive Python database"
+description = "Open Source Reactive Database"
 readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.9"

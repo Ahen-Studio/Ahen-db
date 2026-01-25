@@ -68,6 +68,8 @@ class Table:
         max_length = 1
         for key, value in kwargs.items():
             if isinstance(value, list):
+                if not value:
+                    raise ValueError(f"Empty list provided for '{key}'")
                 max_length = max(max_length, len(value))
 
         # Prepare data for each row

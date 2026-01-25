@@ -216,7 +216,7 @@ class Database:
         # Build INSERT query
         columns = list(encrypted_data.keys())
         placeholders = ", ".join(["?" for _ in columns])
-        column_names = ", ".join(columns)
+        column_names = ", ".join([f"[{col}]" for col in columns])
 
         cursor = self.conn.cursor()
 
@@ -286,15 +286,16 @@ class Database:
 
         # Add additional filters (AND conditions)
         for column, value in filters.items():
-            if column not in ("id", "created_at"):
-                # Handle list values - use IN clause
-                if isinstance(value, list) and len(value) > 0:
-                    placeholders = ", ".join(["?" for _ in value])
-                    conditions.append(f"[{column}] IN ({placeholders})")
-                    params.extend([str(v) for v in value])
-                else:
-                    conditions.append(f"[{column}] = ?")
-                    params.append(str(value))
+            # Handle list values - use IN clause
+            if isinstance(value, list):
+                if not value:
+                    raise ValueError(f"Empty list provided for filter '{column}'")
+                placeholders = ", ".join(["?" for _ in value])
+                conditions.append(f"[{column}] IN ({placeholders})")
+                params.extend([str(v) for v in value])
+            else:
+                conditions.append(f"[{column}] = ?")
+                params.append(str(value))
 
         # Build query
         where_clause = " AND ".join(conditions) if conditions else "1=1"
@@ -324,7 +325,10 @@ class Database:
 
         cursor = self.conn.cursor()
 
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table'")
+        cursor.execute(
+            "SELECT name FROM sqlite_master "
+            "WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '_skypy_config'"
+        )
         return [row[0] for row in cursor.fetchall()]
 
 
@@ -485,7 +489,7 @@ class Database:
     def _normalize_config(
         self,
         config: Dict[str, Any],
-    ) -> Dict[str, str]:
+    ) -> Dict[str, Any]:
         """
         Normalize configuration to ensure all types are strings for JSON serialization.
 
@@ -496,20 +500,28 @@ class Database:
             Normalized configuration with string types
         """
 
-        normalized = {}
+        def _normalize_type(t: Any) -> str:
+            if t is str or (isinstance(t, type) and t is str):
+                return "str"
+            if t is int or (isinstance(t, type) and t is int):
+                return "int"
+            if t is float or (isinstance(t, type) and t is float):
+                return "float"
+            if t is bool or (isinstance(t, type) and t is bool):
+                return "bool"
+            return str(t)
+
+        normalized: Dict[str, Any] = {}
         for col_name, col_type in config.items():
-            # Convert type objects to their string representation
-            if col_type is str or isinstance(col_type, type) and col_type is str:
-                normalized[col_name] = "str"
-            elif col_type is int or isinstance(col_type, type) and col_type is int:
-                normalized[col_name] = "int"
-            elif col_type is float or isinstance(col_type, type) and col_type is float:
-                normalized[col_name] = "float"
-            elif col_type is bool or isinstance(col_type, type) and col_type is bool:
-                normalized[col_name] = "bool"
+            if isinstance(col_type, dict):
+                normalized[col_name] = {
+                    **col_type,
+                    "type": _normalize_type(col_type.get("type", "str")),
+                }
+            elif isinstance(col_type, list):
+                normalized[col_name] = col_type
             else:
-                # Keep as is if it's already a string or special value
-                normalized[col_name] = str(col_type)
+                normalized[col_name] = _normalize_type(col_type)
 
         return normalized
 
@@ -694,6 +706,14 @@ class Database:
         for key, value in data.items():
             if key in config:
                 expected_type = config[key]
+                optional = False
+                if isinstance(expected_type, dict):
+                    optional = expected_type.get("optional", False)
+                    expected_type = expected_type.get("type", "str")
+
+                if value is None and optional:
+                    validated_data[key] = None
+                    continue
 
                 # Skip "auto" type
                 if expected_type == "auto" or expected_type == "id":

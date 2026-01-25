@@ -109,17 +109,18 @@ class TableDefinition:
         ]
 
         for col_name, validator in self.columns.items():
+            base_validator = getattr(validator, "validator", validator)
             if col_name in ["id", "created_at"]:
                 continue
 
             # Map validators to SQL types
             sql_type = "TEXT"  # Default for strings and other types
 
-            if isinstance(validator, v.int64().__class__):
+            if isinstance(base_validator, v.int64().__class__):
                 sql_type = "INTEGER"
-            elif isinstance(validator, v.float64().__class__):
+            elif isinstance(base_validator, v.float64().__class__):
                 sql_type = "REAL"
-            elif isinstance(validator, v.boolean().__class__):
+            elif isinstance(base_validator, v.boolean().__class__):
                 sql_type = "INTEGER"
             else:
                 sql_type = "TEXT"
