@@ -3,10 +3,10 @@
  <img alt="Skypy" width="auto" height="auto" src="https://github.com/amichyrpi/skypy-db/blob/main/docs/logo/dark.svg#gh-dark-mode-only">
 </div>
 
-<div align="center">
+<p align="center">
     <b>Skypy - Open Source Reactive Database</b>. <br />
     The better way to build Python logging system!
-</div>
+</p>
 
 <div align="center">
 
