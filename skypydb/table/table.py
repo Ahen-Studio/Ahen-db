@@ -74,11 +74,11 @@ class Table:
 
         # Prepare data for each row
         inserted_ids = []
-        for i in range(max_length):
+        for row_index in range(max_length):
             row_data = {}
             for key, value in kwargs.items():
                 if isinstance(value, list):
-                    row_data[key] = value[i] if i < len(value) else value[-1]
+                    row_data[key] = value[row_index] if row_index < len(value) else value[-1]
                 else:
                     row_data[key] = value
 
