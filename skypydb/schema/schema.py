@@ -81,10 +81,9 @@ class TableDefinition:
                 is_optional = getattr(validator, 'optional', False)
                 if is_optional:
                     continue
-                else:
-                    raise ValueError(
-                        f"Missing required column: '{col_name}'"
-                    )
+                raise ValueError(
+                    f"Missing required column: '{col_name}'"
+                )
 
             value = row_data[col_name]
             if not validator.validate(value):
