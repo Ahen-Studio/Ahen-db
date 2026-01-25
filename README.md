@@ -42,7 +42,6 @@ pip install skypydb # python client
 
 ## TODO
 
-- [ ] Improve CLI: add --help and generate schema.py and _generated folder under skypydb folder
 - [ ] Create the dashboard using Reflex
 - [ ] update the documentation
 
