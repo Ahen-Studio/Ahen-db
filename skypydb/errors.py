@@ -72,3 +72,39 @@ class EncryptionError(SkypydbError):
     """
 
     pass
+
+
+# collection errors handling
+class CollectionNotFoundError(SkypydbError):
+    """
+    Raised when a vector collection is not found.
+    """
+
+    pass
+
+
+# collection errors handling
+class CollectionAlreadyExistsError(SkypydbError):
+    """
+    Raised when trying to create a collection that already exists.
+    """
+
+    pass
+
+
+# embedding errors handling
+class EmbeddingError(SkypydbError):
+    """
+    Raised when embedding generation fails.
+    """
+
+    pass
+
+
+# vector search errors handling
+class VectorSearchError(SkypydbError):
+    """
+    Raised when vector similarity search fails.
+    """
+
+    pass

@@ -4,8 +4,8 @@
 </div>
 
 <p align="center">
-    <b>Skypy - Open Source Reactive Database</b>. <br />
-    The better way to build Python logging system!
+    <b>Skypy - Open Source Reactive and Vector Embeddings Database</b>. <br />
+    The better way to build Python logging system! And adding memory to a LLM.
 </p>
 
 <div align="center">
@@ -32,6 +32,8 @@ pip install skypydb # python client
 
 - Table: create, delete, search data from tables
 
+- Vector embeddings: create, search and delete vectors collections. It supports [ollama](https://ollama.com/download) embedding model (default model is [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large)). This feature is used for adding memory to a LLM.
+
 - Security, Input Validation: AES-256-GCM encryption for data at rest with selective field encryption, automatic protection against SQL injection attacks
 
 - CLI: command line interface to initialize your database and launch the dashboard with one simple command
@@ -44,6 +46,7 @@ pip install skypydb # python client
 
 - [ ] Create the dashboard using Reflex
 - [ ] update the documentation
+- [ ] refactor /api/collection.py /api/vector_client.py /db/vector_database.py
 
 ## What's next!
 
@@ -181,6 +184,39 @@ success_table.delete(
 )
 ```
 
+### Vector
+
+- Use the vector API to perform vector operations on your database, it is useful for adding memory to an LLM.
+
+```python
+from skypydb import Vector_Client
+
+# Create a client
+client = Vector_Client(path="./vector_db")
+
+# Create a collection
+collection = client.create_collection("my-documents")
+
+# Add documents (automatically embedded using Ollama)
+collection.add(
+    documents=["This is document1", "This is document2"],
+    metadatas=[{"source": "notion"}, {"source": "google-docs"}],
+    ids=["doc1", "doc2"]
+)
+
+# Query for similar documents
+results = collection.query(
+    query_texts=["This is a query document"],
+    n_results=2
+)
+
+# Access results
+for i, doc_id in enumerate(results["ids"][0]):
+    print(f"ID: {doc_id}")
+    print(f"Document: {results['documents'][0][i]}")
+    print(f"Distance: {results['distances'][0][i]}")
+```
+
 ### Secure Implementation
 
 - first create an encryption key and a salt key and make them available in the .env.local file don't show those keys to anyone, you can use the Cli to generate those keys
@@ -250,6 +286,12 @@ for user_success_log in user_success_logs:
 ```
 
 Learn more on our [Docs](https://ahen.mintlify.app/)
+
+## All Thanks To Our Contributors:
+
+<a href="https://github.com/Ahen-Studio/skypy-db/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Ahen-Studio/skypy-db" />
+</a>
 
 ## License
 
