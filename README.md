@@ -192,7 +192,7 @@ success_table.delete(
 from skypydb import Vector_Client
 
 # Create a client
-client = Vector_Client(path="./vector_db")
+client = Vector_Client()
 
 # Create a collection
 collection = client.create_collection("my-documents")
