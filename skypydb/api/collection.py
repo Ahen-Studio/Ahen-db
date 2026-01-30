@@ -47,18 +47,25 @@ class Collection:
             name: Name of the collection
             metadata: Optional collection metadata
         """
+        
         self._db = db
         self._name = name
         self._metadata = metadata or {}
     
     @property
     def name(self) -> str:
-        """Get collection name."""
+        """
+        Get collection name.
+        """
+        
         return self._name
     
     @property
     def metadata(self) -> Dict[str, Any]:
-        """Get collection metadata."""
+        """
+        Get collection metadata.
+        """
+        
         return self._metadata
     
     def add(
@@ -100,6 +107,7 @@ class Collection:
                 ids=["doc1", "doc2"]
             )
         """
+        
         self._db.add(
             collection_name=self._name,
             ids=ids,
@@ -135,6 +143,7 @@ class Collection:
                 metadatas=[{"lang": "fr", "updated": True}]
             )
         """
+        
         self._db.update(
             collection_name=self._name,
             ids=ids,
@@ -162,6 +171,7 @@ class Collection:
             documents: Optional documents
             metadatas: Optional metadata
         """
+        
         # The add method already uses INSERT OR REPLACE
         self._db.add(
             collection_name=self._name,
@@ -199,6 +209,7 @@ class Collection:
             # Delete by document content
             collection.delete(where_document={"$contains": "deprecated"})
         """
+        
         self._db.delete(
             collection_name=self._name,
             ids=ids,
@@ -245,6 +256,7 @@ class Collection:
                 print(f"ID: {doc_id}")
                 print(f"Document: {results['documents'][i]}")
         """
+        
         results = self._db.get(
             collection_name=self._name,
             ids=ids,
@@ -320,6 +332,7 @@ class Collection:
                 print(f"Distance: {results['distances'][0][i]}")
                 print(f"Document: {results['documents'][0][i]}")
         """
+        
         return self._db.query(
             collection_name=self._name,
             query_embeddings=query_embeddings,
@@ -340,6 +353,7 @@ class Collection:
         Example:
             print(f"Collection has {collection.count()} items")
         """
+        
         return self._db.count(self._name)
     
     def peek(self, limit: int = 10) -> Dict[str, List[Any]]:
@@ -358,6 +372,7 @@ class Collection:
             sample = collection.peek(5)
             print(f"Sample IDs: {sample['ids']}")
         """
+        
         return self.get(limit=limit)
     
     def modify(
@@ -375,6 +390,7 @@ class Collection:
             name: New name for the collection (not supported)
             metadata: New metadata for the collection
         """
+        
         if name is not None and name != self._name:
             raise NotImplementedError("Renaming collections is not supported")
         

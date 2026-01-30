@@ -1,7 +1,3 @@
-"""
-skypydb vector store implementation for mem0.
-"""
-
 import logging
 from typing import Dict, List, Optional
 
@@ -88,7 +84,7 @@ class SkypyDB(VectorStoreBase):
         # Handle case where vectors might be a single vector instead of list of vectors
         if vectors and not isinstance(vectors[0], list):
             vectors = [vectors]
-        
+
         if ids is None:
             import uuid
             ids = [str(uuid.uuid4()) for _ in vectors]
@@ -111,7 +107,7 @@ class SkypyDB(VectorStoreBase):
         # Handle case where vectors might be a single vector
         if vectors and not isinstance(vectors[0], list):
             vectors = [vectors]
-            
+
         where_clause = self._generate_where_clause(filters) if filters else None
         results = self.collection.query(
             query_embeddings=vectors,
@@ -136,7 +132,7 @@ class SkypyDB(VectorStoreBase):
                 embeddings = [vector]
             else:
                 embeddings = vector
-        
+
         self.collection.update(
             ids=[vector_id],
             embeddings=embeddings,
