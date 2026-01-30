@@ -64,7 +64,7 @@ class Vector_Client:
             embedding_function: Optional custom embedding function that takes
                                a list of texts and returns a list of embeddings.
                                If not provided, uses Ollama.
-            embedding_model: Ollama model to use for embeddings (default: nomic-embed-text)
+            embedding_model: Ollama model to use for embeddings (default: mxbai-embed-large)
             ollama_base_url: Base URL for Ollama API (default: http://localhost:11434)
 
         Example:
