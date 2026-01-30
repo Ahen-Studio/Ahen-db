@@ -32,7 +32,9 @@ pip install skypydb # python client
 
 - Table: create, delete, search data from tables
 
-- Vector embeddings: create, search and delete vectors collections. It supports [ollama](https://ollama.com/download) embedding model (default model is [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large)). This feature is used for adding memory to a LLM.
+- Vector embeddings: create, search and delete vectors collections. It supports [ollama](https://ollama.com/download) embedding model (default model is [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large)).
+
+- Memory: add memory to a LLM by using [mem0](https://github.com/mem0ai/mem0) and our integration.
 
 - Security, Input Validation: AES-256-GCM encryption for data at rest with selective field encryption, automatic protection against SQL injection attacks
 
@@ -215,6 +217,51 @@ for i, doc_id in enumerate(results["ids"][0]):
     print(f"ID: {doc_id}")
     print(f"Document: {results['documents'][0][i]}")
     print(f"Distance: {results['distances'][0][i]}")
+```
+
+### Mem0
+
+- to use mem0 with skypydb you will need to download the mem0 folder and place every file in the correct directory in the mem0 installation folder.
+
+```python
+from mem0 import Memory
+
+# Local mem0 config
+config = {
+    "vector_store": {
+        "provider": "skypydb",
+        "config": {
+            "collection_name": "memory",
+            "path": "db/_generated/mem0_vector.db"
+        }
+    },
+    "llm": {
+        "provider": "ollama",
+        "config": {
+            "model": "llama3.1:latest",
+            "temperature": 0.3,
+            "max_tokens": 1024,
+            "ollama_base_url": "http://localhost:11434",
+        },
+    },
+    "embedder": {
+        "provider": "ollama",
+        "config": {
+            "model": "mxbai-embed-large"
+        }
+    }
+}
+
+m = Memory.from_config(config)
+
+# Add memories
+m.add("I love Python programming", user_id="user1")
+m.add("My favorite color is blue", user_id="user1")
+
+# Search memories
+results = m.search("What programming language do I like?", user_id="user1")
+
+print(results)
 ```
 
 ### Secure Implementation

@@ -1,20 +1,20 @@
-"""
-skypydb configuration for mem0.
-"""
-
 from typing import Any, ClassVar, Dict, Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
-class SkypyDBConfig(BaseModel):
-    """Configuration for skypydb vector store."""
+class SkypyDbConfig(BaseModel):
+    try:
+        from skypydb import Vector_Client
+    except ImportError:
+        raise ImportError("The 'skypydb' library is required. Please install it using 'pip install skypydb'.")
+    Vector_Client: ClassVar[type] = Vector_Client
 
     collection_name: str = Field("mem0", description="Default name for the collection")
     path: Optional[str] = Field(None, description="Path to the database directory")
     host: Optional[str] = Field(None, description="Database connection remote host")
     port: Optional[int] = Field(None, description="Database connection remote port")
-    embedding_model: str = Field("nomic-embed-text", description="Ollama embedding model")
+    embedding_model: str = Field("mxbai-embed-large", description="Ollama embedding model")
     ollama_base_url: str = Field("http://localhost:11434", description="Ollama API base URL")
 
     @model_validator(mode="before")

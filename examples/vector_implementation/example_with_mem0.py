@@ -6,7 +6,7 @@ config = {
         "provider": "skypydb",
         "config": {
             "collection_name": "memory",
-            "path": "db"
+            "path": "db/_generated/mem0_vector.db"
         }
     },
     "llm": {

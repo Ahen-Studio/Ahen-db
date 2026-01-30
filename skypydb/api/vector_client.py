@@ -3,7 +3,7 @@ Vector Client API for Skypydb.
 """
 
 import os
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Dict, List, Optional
 from ..db.vector_database import VectorDatabase
 from ..embeddings.ollama import OllamaEmbedding
 from .collection import Collection
@@ -69,14 +69,6 @@ class Vector_Client:
 
             # With custom embedding model
             client = Vector_Client(embedding_model="mxbai-embed-large")
-
-            # With custom embedding function
-            def my_embedding_function(texts):
-                # Your custom embedding logic
-                return [[0.1, 0.2, ...] for _ in texts]
-
-            # Initialize client with custom embedding function
-            client = Vector_Client(embedding_function=my_embedding_function)
         """
 
         # Set default path
@@ -349,34 +341,6 @@ class Vector_Client:
         return int(time.time() * 1e9)
 
 
-    # get the current embedding function
-    @property
-    def embedding_function(
-        self,
-    ) -> Callable[[List[str]], List[List[float]]]:
-        """
-        Get the current embedding function.
-        """
-
-        return self._embedding_function
-
-
-    # set a new embedding function for the client
-    def set_embedding_function(
-        self,
-        embedding_function: Callable[[List[str]], List[List[float]]]
-    ) -> None:
-        """
-        Set a new embedding function for the client.
-
-        Args:
-            embedding_function: Function that takes texts and returns embeddings
-        """
-
-        self._embedding_function = embedding_function
-        self._db.set_embedding_function(embedding_function)
-
-
     # close the database connection
     def close(
         self,
@@ -390,33 +354,3 @@ class Vector_Client:
 
         self._db.close()
         self._collections.clear()
-
-
-    # support context manager protocol
-    def __enter__(
-        self,
-    ) -> "Vector_Client":
-        """
-        Support context manager protocol.
-        """
-        
-        return self
-    
-    def __exit__(
-    def __exit__(
-        self,
-        exc_type,
-        exc_val,
-        exc_tb,
-    ) -> bool:
-        """
-        Close connection on context exit.
-        """
-        
-        self.close()
-        return False
-        """
-        Close connection on context exit.
-        """
-        
-        self.close()
