@@ -46,7 +46,6 @@ class Vector_Client:
         path: Optional[str] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,
-        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None,
         embedding_model: str = "mxbai-embed-large",
         ollama_base_url: str = "http://localhost:11434",
     ):
@@ -61,9 +60,6 @@ class Vector_Client:
             path: Path to the database directory. Defaults to ./db/_generated/vector.db
             host: Optional host for remote connection (reserved for future use)
             port: Optional port for remote connection (reserved for future use)
-            embedding_function: Optional custom embedding function that takes
-                               a list of texts and returns a list of embeddings.
-                               If not provided, uses Ollama.
             embedding_model: Ollama model to use for embeddings (default: mxbai-embed-large)
             ollama_base_url: Base URL for Ollama API (default: http://localhost:11434)
 
@@ -101,13 +97,10 @@ class Vector_Client:
         self.port = port
 
         # Set up embedding function
-        if embedding_function is not None:
-            self._embedding_function = embedding_function
-        else:
-            self._embedding_function = OllamaEmbedding(
-                model=embedding_model,
-                base_url=ollama_base_url
-            )
+        self._embedding_function = OllamaEmbedding(
+            model=embedding_model,
+            base_url=ollama_base_url
+        )
 
         # Initialize vector database
         self._db = VectorDatabase(
@@ -124,7 +117,6 @@ class Vector_Client:
         self,
         name: str,
         metadata: Optional[Dict[str, Any]] = None,
-        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None,
         get_or_create: bool = False,
     ) -> Collection:
         """
@@ -136,8 +128,6 @@ class Vector_Client:
         Args:
             name: Unique name for the collection
             metadata: Optional metadata to attach to the collection
-            embedding_function: Optional custom embedding function for this collection
-                               (overrides client's default)
             get_or_create: If True, return existing collection if it exists
 
         Returns:
@@ -158,16 +148,10 @@ class Vector_Client:
         """
 
         if get_or_create:
-            return self.get_or_create_collection(name, metadata, embedding_function)
+            return self.get_or_create_collection(name, metadata)
 
         # Create collection in database
         self._db.create_collection(name, metadata)
-
-        # Use collection-specific embedding function if provided
-        if embedding_function is not None:
-            # Custom embedding functions per collection not yet supported
-            # Uses client's default embedding function
-            pass
 
         # Create and cache collection instance
         collection = Collection(
@@ -184,14 +168,12 @@ class Vector_Client:
     def get_collection(
         self,
         name: str,
-        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None,
     ) -> Collection:
         """
         Get an existing collection by name.
 
         Args:
             name: Name of the collection to retrieve
-            embedding_function: Optional embedding function to use
 
         Returns:
             Collection instance
@@ -228,7 +210,6 @@ class Vector_Client:
         self,
         name: str,
         metadata: Optional[Dict[str, Any]] = None,
-        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None,
     ) -> Collection:
         """
         Get an existing collection or create a new one.
@@ -236,7 +217,6 @@ class Vector_Client:
         Args:
             name: Name of the collection
             metadata: Optional metadata (used only when creating)
-            embedding_function: Optional embedding function to use
 
         Returns:
             Collection instance
