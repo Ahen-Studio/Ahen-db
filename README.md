@@ -48,7 +48,6 @@ pip install skypydb # python client
 
 - [ ] Create the dashboard using Reflex
 - [ ] update the documentation
-- [ ] refactor /api/collection.py and /db/vector_database.py
 
 ## What's next!
 
@@ -191,10 +190,10 @@ success_table.delete(
 - Use the vector API to perform vector operations on your database, it is useful for adding memory to an LLM.
 
 ```python
-from skypydb import Vector_Client
+import skypydb
 
 # Create a client
-client = Vector_Client()
+client = skypydb.VectorClient()
 
 # Create a collection
 collection = client.create_collection("my-documents")

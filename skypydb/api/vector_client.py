@@ -3,6 +3,7 @@ Vector Client API for Skypydb.
 """
 
 import os
+import time
 from typing import Any, Dict, List, Optional
 from ..db.vector_database import VectorDatabase
 from ..embeddings.ollama import OllamaEmbedding
@@ -10,17 +11,17 @@ from .collection import Collection
 
 
 # main class for the vector client
-class Vector_Client:
+class VectorClient:
     """
     Vector database client with ChromaDB-compatible API.
 
     This client provides automatic embedding generation using Ollama models.
 
     Example:
-        from skypydb import Vector_Client
+        import skypydb
 
         # Create a client
-        client = Vector_Client()
+        client = skypydb.VectorClient()
 
         # Create a collection
         collection = client.create_collection("my-documents")
@@ -337,7 +338,6 @@ class Vector_Client:
                 print("Database is alive")
         """
 
-        import time
         return int(time.time() * 1e9)
 
 

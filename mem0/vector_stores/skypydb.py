@@ -4,7 +4,7 @@ from typing import Dict, List, Optional
 from pydantic import BaseModel
 
 try:
-    from skypydb import Vector_Client
+    import skypydb
 except ImportError:
     raise ImportError("The 'skypydb' library is required. Please install it using 'pip install skypydb'.")
 
@@ -23,7 +23,7 @@ class SkypyDB(VectorStoreBase):
     def __init__(
         self,
         collection_name: str,
-        client: Optional[Vector_Client] = None,
+        client: Optional[skypydb.VectorClient] = None,
         host: Optional[str] = None,
         port: Optional[int] = None,
         path: Optional[str] = None,
@@ -48,7 +48,7 @@ class SkypyDB(VectorStoreBase):
             if path is None:
                 path = "./db/_generated/mem0_vector.db"
 
-            self.client = Vector_Client(
+            self.client = skypydb.VectorClient(
                 path=path,
                 host=host,
                 port=port,

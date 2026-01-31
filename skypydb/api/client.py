@@ -11,6 +11,9 @@ from ..errors import TableAlreadyExistsError, TableNotFoundError
 from ..table.table import Table
 from ..schema import Schema
 
+# constant to define the path to the database file
+DB_PATH = "./db/_generated/skypydb.db"
+
 
 # main class to interact with Skypydb
 class Client:
@@ -34,7 +37,8 @@ class Client:
             encryption_key: Optional encryption key for data encryption at rest.
                            If provided, sensitive data will be encrypted.
                            Generate a secure key with: EncryptionManager.generate_key()
-            salt: Required, non-empty salt for PBKDF2HMAC when encryption is enabled.
+            salt: Optional salt for PBKDF2HMAC; must be non-empty and provided
+                                 when encryption is enabled (i.e., when an encryption_key is set).
             encrypted_fields: Optional list of field names to encrypt.
                              If None and encryption is enabled, all fields except
                              'id' and 'created_at' will be encrypted.
@@ -56,9 +60,6 @@ class Client:
                 encrypted_fields=["content", "email", "password"]
             )
         """
-        
-        # constant to define the path to the database file
-        DB_PATH = "./db/_generated/skypydb.db"
         
         # Ensure the directory exists
         db_dir = os.path.dirname(DB_PATH)

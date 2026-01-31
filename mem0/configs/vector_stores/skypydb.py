@@ -5,10 +5,10 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 class SkypyDbConfig(BaseModel):
     try:
-        from skypydb import Vector_Client
+        import skypydb
     except ImportError:
         raise ImportError("The 'skypydb' library is required. Please install it using 'pip install skypydb'.")
-    Vector_Client: ClassVar[type] = Vector_Client
+    VectorClient: ClassVar[type] = skypydb.VectorClient
 
     collection_name: str = Field("mem0", description="Default name for the collection")
     path: Optional[str] = Field(None, description="Path to the database directory")

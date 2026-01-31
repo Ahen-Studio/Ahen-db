@@ -3,7 +3,7 @@ Skypydb - Open Source Reactive Database for Python.
 """
 
 from .api.client import Client
-from .api.vector_client import Vector_Client
+from .api.vector_client import VectorClient
 from .api.collection import Collection
 from .errors import (
     DatabaseError,
@@ -28,7 +28,7 @@ __version__ = "0.1.9"
 
 __all__ = [
     "Client",
-    "Vector_Client",
+    "VectorClient",
     "Collection",
     "SkypydbError",
     "DatabaseError",
