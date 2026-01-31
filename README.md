@@ -53,6 +53,25 @@ pip install skypydb # python client
 
 - give us ideas!
 
+## Error Codes
+
+- Skypydb uses standardized error codes to help you quickly identify and handle issues:
+
+| Code       | Error                       | Description                                                             |
+|------------|-----------------------------|-------------------------------------------------------------------------|
+| **SKY001** | SkypydbError                | Base exception for all Skypydb errors                                   |
+| **SKY101** | TableNotFoundError          | Raised when attempting to access a table that doesn't exist             |
+| **SKY102** | TableAlreadyExistsError     | Raised when trying to create a table that already exists                |
+| **SKY103** | DatabaseError               | Raised when a database operation fails                                  |
+| **SKY201** | InvalidSearchError          | Raised when search parameters are invalid                               |
+| **SKY301** | SecurityError               | Raised when a security operation fails                                  |
+| **SKY302** | ValidationError             | Raised when input validation fails                                      |
+| **SKY303** | EncryptionError             | Raised when encryption/decryption operations fail                       |
+| **SKY401** | CollectionNotFoundError     | Raised when attempting to access a vector collection that doesn't exist |
+| **SKY402** | CollectionAlreadyExistsError| Raised when trying to create a collection that already exists           |
+| **SKY403** | EmbeddingError              | Raised when embedding generation fails                                  |
+| **SKY404** | VectorSearchError           | Raised when vector similarity search fails                              |
+
 ## Cli
 
 - use the cli to initialize your database and launch the dashboard with one simple command
