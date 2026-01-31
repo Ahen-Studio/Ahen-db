@@ -48,7 +48,7 @@ pip install skypydb # python client
 
 - [ ] Create the dashboard using Reflex
 - [ ] update the documentation
-- [ ] refactor /api/collection.py /api/vector_client.py /db/vector_database.py and the mem0 integration
+- [ ] refactor /api/collection.py and /db/vector_database.py
 
 ## What's next!
 
