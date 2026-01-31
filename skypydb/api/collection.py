@@ -14,10 +14,10 @@ class Collection:
     Represents a vector collection in the database.
 
     Example:
-        from skypydb import Vector_Client
+        import skypydb
 
         # Create a client
-        client = Vector_Client()
+        client = skypydb.VectorClient()
 
         # Create a collection
         collection = client.create_collection("my-documents")
