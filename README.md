@@ -221,6 +221,12 @@ for i, doc_id in enumerate(results["ids"][0]):
 
 ### Mem0
 
+- use this command to install skypydb and mem0
+
+```bash
+pip install skypydb[mem0]
+```
+
 - to use mem0 with skypydb you will need to download the mem0 folder and place every file in the correct directory in the mem0 installation folder.
 
 ```python

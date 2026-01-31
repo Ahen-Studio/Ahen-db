@@ -19,6 +19,9 @@ dependencies = [
 [project.scripts]
 skypydb = "skypydb.cli.cli:main"
 
+[project.optional-dependencies]
+mem0 = [ "mem0ai~=0.1.94" ]
+
 [project.urls]
 "Homepage" = "https://github.com/Ahen-Studio/skypy-db"
 "Bug Tracker" = "https://github.com/Ahen-Studio/skypy-db/issues"

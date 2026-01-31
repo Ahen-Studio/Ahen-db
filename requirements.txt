@@ -4,3 +4,4 @@ cryptography>=46.0.3
 python-dotenv>=0.21.1
 typer>=0.21.1
 questionary>=2.0.1
+mem0ai>=0.1.94
