@@ -53,7 +53,12 @@ class TableAlreadyExistsError(SkypydbError):
 # database errors handling
 class DatabaseError(SkypydbError):
     """
-    Raised when a database operation fails.
+    Raised when a database-level operation fails.
+
+    This is a generic error used for failures such as establishing a database
+    connection, executing queries, committing or rolling back transactions, or
+    performing other low-level database actions that are not covered by more
+    specific exceptions like TableNotFoundError or TableAlreadyExistsError.
     """
 
     code = "SKY103"
