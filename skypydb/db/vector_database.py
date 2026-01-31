@@ -187,6 +187,8 @@ class VectorDatabase:
             Collection metadata or None if not found
         """
 
+        name = InputValidator.validate_table_name(name)
+
         if not self.collection_exists(name):
             return None
 
@@ -223,6 +225,8 @@ class VectorDatabase:
         Returns:
             Collection metadata
         """
+
+        name = InputValidator.validate_table_name(name)
 
         if not self.collection_exists(name):
             self.create_collection(name, metadata)
@@ -315,6 +319,8 @@ class VectorDatabase:
             ValueError: If neither embeddings nor documents are provided
         """
 
+        collection_name = InputValidator.validate_table_name(collection_name)
+
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
 
@@ -399,6 +405,8 @@ class VectorDatabase:
             metadatas: Optional new metadata
         """
 
+        collection_name = InputValidator.validate_table_name(collection_name)
+
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
 
@@ -459,6 +467,8 @@ class VectorDatabase:
         Returns:
             Dictionary with lists of ids, embeddings, documents, and metadatas
         """
+
+        collection_name = InputValidator.validate_table_name(collection_name)
 
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
@@ -536,6 +546,8 @@ class VectorDatabase:
             Dictionary with nested lists of results for each query
         """
         
+        collection_name = InputValidator.validate_table_name(collection_name)
+
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
 
@@ -636,6 +648,8 @@ class VectorDatabase:
             Number of items deleted
         """
 
+        collection_name = InputValidator.validate_table_name(collection_name)
+
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
 
@@ -679,6 +693,8 @@ class VectorDatabase:
         Returns:
             Number of items in the collection
         """
+
+        collection_name = InputValidator.validate_table_name(collection_name)
 
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
