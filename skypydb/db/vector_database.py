@@ -121,6 +121,8 @@ class VectorDatabase:
             True if collection exists
         """
 
+        name = InputValidator.validate_table_name(name)
+
         cursor = self.conn.cursor()
 
         cursor.execute(
