@@ -28,23 +28,8 @@ class SkypydbError(Exception):
             formatted_message = f"[{self.code}] {self.message}"
         else:
             formatted_message = f"[{self.code}] {self.__class__.__name__}"
+
         super().__init__(formatted_message)
-
-
-    # format the error message
-    def _format_message(
-        self,
-    ):
-        """
-        Format the error message.
-
-        Returns:
-            str: The formatted error message.
-        """
-
-        if self.message:
-            return f"[{self.code}] {self.message}"
-        return f"[{self.code}] {self.__class__.__name__}"
 
 
 # table not found error handling
