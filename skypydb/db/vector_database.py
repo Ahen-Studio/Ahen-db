@@ -149,6 +149,7 @@ class VectorDatabase:
 
         name = InputValidator.validate_table_name(name)
 
+
         if self.collection_exists(name):
             raise ValueError(f"Collection '{name}' already exists")
 
