@@ -233,7 +233,7 @@ class SkypyCLI:
         npm_cmd = "npm"
 
         try:
-            subprocess.run([npm_cmd, "--version"], capture_output=True, check=True, shell=True)
+            subprocess.run([npm_cmd, "--version"], capture_output=True, check=True)
         # error fallback if npm is not found
         except (subprocess.CalledProcessError, FileNotFoundError):
             print("[red]Error: npm is required to run the dashboard. Please install Node.js and npm.[/red]")
