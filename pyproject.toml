@@ -7,7 +7,7 @@ readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.9"
-classifiers = ["Programming Language :: Python :: 3", "License :: OSI Approved :: MIT License"]
+classifiers = ["Programming Language :: Python :: 3"]
 dependencies = [
     "reflex>=0.8.25",
     "uvicorn>=0.23.0",
