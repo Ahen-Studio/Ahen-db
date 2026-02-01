@@ -128,6 +128,7 @@ class HealthAPI:
         Check vector database health.
         """
 
+        vdb = None
         try:
             vdb = DatabaseConnection.get_vector()
             collection_count = len(vdb.list_collections())
@@ -142,6 +143,13 @@ class HealthAPI:
                 "error": str(error)
             }
             status["status"] = "degraded"
+        finally:
+            if vdb is not None:
+                try:
+                    vdb.close()
+                except Exception:
+                    # Suppress close errors in health check to avoid masking original issues
+                    pass
 
 
 # table operations
