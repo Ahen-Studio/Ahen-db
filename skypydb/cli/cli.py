@@ -251,7 +251,6 @@ class SkypyCLI:
                 env=os.environ,
                 check=True
             )
-            )
         # error fallback if the dashboard fails to start
         except subprocess.CalledProcessError as exc:
             print(f"[red]Error: Dashboard failed to start: {exc}[/red]")
