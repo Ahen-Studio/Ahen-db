@@ -174,7 +174,7 @@ class TableAPI:
         try:
             return {
                 "name": table_name,
-                "row_count": len(db.get_all_data(table_name)),
+                "row_count": db.get_row_count(table_name),
                 "columns": db.get_table_columns(table_name),
                 "config": db.get_table_config(table_name)
             }
