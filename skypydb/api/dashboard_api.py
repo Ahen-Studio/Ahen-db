@@ -547,6 +547,7 @@ class StatisticsAPI:
         Collect collection statistics.
         """
 
+        vdb = None
         try:
             vdb = DatabaseConnection.get_vector()
             collections = vdb.list_collections()
@@ -556,9 +557,15 @@ class StatisticsAPI:
                 vdb.count(coll['name'])
                 for coll in collections
             )
-            vdb.close()
         except Exception as error:
             stats["collections"]["error"] = str(error)
+        finally:
+            if vdb is not None:
+                try:
+                    vdb.close()
+                except Exception:
+                    # Suppress close errors to avoid masking original exceptions
+                    pass
 
 
 # main api class
