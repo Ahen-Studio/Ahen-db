@@ -297,6 +297,8 @@ class VectorAPI:
             return [self._get_info(vdb, coll) for coll in collections]
         except Exception:
             return []
+        finally:
+            vdb.close()
 
 
     # get information about a vector collection
