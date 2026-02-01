@@ -46,7 +46,7 @@ pip install skypydb # python client
 
 ## TODO
 
-- [ ] Create the dashboard using Reflex
+- [ ] Create the dashboard using Next.js and shadcn-ui
 - [ ] update the documentation
 
 ## What's next!

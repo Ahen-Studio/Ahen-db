@@ -16,7 +16,8 @@
 
 | Beta    | Supported          |
 | ------- | ------------------ |
-| 0.1.9   | :white_check_mark: |
+| 0.1.10  | :white_check_mark: |
+| 0.1.9   | :x:                |
 | 0.1.8   | :white_check_mark: |
 | 0.1.7   | :x:                |
 | 0.1.6   | :x:                |

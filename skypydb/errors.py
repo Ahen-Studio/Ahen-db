@@ -2,7 +2,7 @@
 Custom exceptions for Skypydb.
 """
 
-# base errors handling
+# base error handling
 class SkypydbError(Exception):
     """
     Base exception for all Skypydb errors.
@@ -60,7 +60,7 @@ class TableAlreadyExistsError(SkypydbError):
     default_message = "Table already exists."
 
 
-# database errors handling
+# database error handling
 class DatabaseError(SkypydbError):
     """
     Raised when a database-level operation fails.
@@ -73,7 +73,7 @@ class DatabaseError(SkypydbError):
     )
 
 
-# search errors handling
+# search error handling
 class InvalidSearchError(SkypydbError):
     """
     Raised when search parameters are invalid.
