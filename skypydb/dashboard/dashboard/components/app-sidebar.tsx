@@ -4,12 +4,14 @@ import * as React from "react"
 import Link from "next/link"
 import {
   IconActivity,
+  IconBook,
   IconDatabase,
   IconDashboard,
   IconFileSearch,
-  IconHelp,
+  IconSearch,
   IconSettings,
   IconTable,
+  IconX,
 } from "@tabler/icons-react"
 
 import { NavMain } from "@/components/nav-main"
@@ -81,6 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const [settingsOpen, setSettingsOpen] = React.useState(false)
   const [mainDbPath, setMainDbPath] = React.useState("./db/_generated/skypydb.db")
   const [vectorDbPath, setVectorDbPath] = React.useState("./db/_generated/vector.db")
+  const [searchQuery, setSearchQuery] = React.useState("")
 
   // Load saved paths when dialog opens
   React.useEffect(() => {
@@ -97,6 +100,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     setSettingsOpen(false)
     window.location.reload()
   }
+
+  // Filter nav items based on search
+  const filteredNavItems = React.useMemo(() => {
+    if (!searchQuery.trim()) return data.navMain
+    return data.navMain.filter(item => 
+      item.title.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [searchQuery])
 
   return (
     <>
@@ -117,28 +128,63 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           </SidebarMenu>
         </SidebarHeader>
         <SidebarContent>
-          <NavMain items={data.navMain} />
-           <div className="mt-auto px-2 space-y-1" suppressHydrationWarning>
+          {/* Search Input */}
+          <div className="px-3 py-2">
+            <div className="relative">
+              <IconSearch className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+              <Input
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-9 h-10"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                >
+                  <IconX className="size-4" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          <NavMain items={filteredNavItems} />
+          
+          {/* Separator */}
+          <div className="my-4 mx-2 h-px bg-border" />
+          
+          {/* Settings and Docs buttons */}
+          <div className="space-y-1" suppressHydrationWarning>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton 
                   onClick={() => setSettingsOpen(true)}
-                  className="w-full cursor-pointer"
+                  className="w-full h-11 cursor-pointer text-base justify-start"
                 >
-                  <IconSettings className="size-4" />
-                  <span>Settings</span>
+                  <IconSettings className="size-5 ml-3 mr-3" />
+                  <span className="font-medium">Settings</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
-            <Link 
-              href="https://github.com/Ahen-Studio/skypy-db" 
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-2 px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-            >
-              <IconHelp className="size-4" />
-              <span>Get Help</span>
-            </Link>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton 
+                  asChild
+                  className="w-full h-11 cursor-pointer text-base justify-start"
+                >
+                  <Link 
+                    href="https://ahen.mintlify.app/getting-started/introduction" 
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center"
+                  >
+                    <IconBook className="size-5 ml-3 mr-3" />
+                    <span className="font-medium">Docs</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
           </div>
         </SidebarContent>
       </Sidebar>

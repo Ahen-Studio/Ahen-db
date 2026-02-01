@@ -51,7 +51,7 @@ import { TableSchema, PaginatedTableData, SearchResult } from "@/types"
 export default function TableDetailPage() {
   const params = useParams()
   const router = useRouter()
-  const tableName = params.name as string
+  const tableName = params.tableName as string
 
   const [schema, setSchema] = useState<TableSchema | null>(null)
   const [data, setData] = useState<PaginatedTableData | null>(null)

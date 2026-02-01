@@ -35,15 +35,15 @@ export function NavMain({
                   tooltip={item.title} 
                   asChild
                   isActive={isActive}
-                  className={`transition-colors ${
+                  className={`w-full h-11 transition-colors text-base ${
                     isActive 
                       ? "bg-white text-black dark:bg-white dark:text-black" 
                       : "hover:bg-white hover:text-black dark:hover:bg-white dark:hover:text-black"
                   }`}
                 >
-                  <Link href={item.url}>
-                    {item.icon && <item.icon />}
-                    <span>{item.title}</span>
+                  <Link href={item.url} className="flex items-center gap-3 px-3">
+                    {item.icon && <item.icon className="size-5" />}
+                    <span className="font-medium">{item.title}</span>
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>

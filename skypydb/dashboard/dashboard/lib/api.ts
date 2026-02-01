@@ -84,11 +84,11 @@ async function fetchAPI<T>(endpoint: string, options?: RequestInit): Promise<T> 
 
 export async function checkAPIConnection(): Promise<boolean> {
   try {
-    await fetch(`${API_BASE_URL}/health`, {
-      method: 'HEAD',
+    const response = await fetch(`${API_BASE_URL}/health`, {
+      method: 'GET',
       headers: { 'Content-Type': 'application/json' },
     })
-    return true
+    return response.ok
   } catch {
     return false
   }

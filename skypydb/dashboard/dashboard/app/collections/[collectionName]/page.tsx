@@ -41,7 +41,7 @@ import { VectorCollectionDetails, PaginatedVectorDocuments } from "@/types"
 
 export default function CollectionDetailPage() {
   const params = useParams()
-  const collectionName = params.name as string
+  const collectionName = params.collectionName as string
 
   const [details, setDetails] = useState<VectorCollectionDetails | null>(null)
   const [documents, setDocuments] = useState<PaginatedVectorDocuments | null>(null)
