@@ -7,74 +7,215 @@ import subprocess
 import sys
 import threading
 import time
+import signal
 from pathlib import Path
-from typing import Optional
+from typing import Optional, TextIO
+from urllib.request import urlopen
+from urllib.error import URLError
 import uvicorn
 from rich import print
 from skypydb.api.server import app
 
 
-# start the dashboard backend server
-def start_api_server(
-    host: str = "0.0.0.0",
-    port: int = 8000,
-    db_path: Optional[str] = None,
-    vector_db_path: Optional[str] = None,
-) -> None:
+class DashboardManager:
     """
-    Start the FastAPI server.
-    
-    Args:
-        host: Host to bind the server to
-        port: Port to run the server on
-        db_path: Path to the main database file
-        vector_db_path: Path to the vector database file
+    Manages both API server and dashboard frontend lifecycle.
     """
 
-    # Set environment variables for database paths
-    if db_path:
-        os.environ["SKYPYDB_PATH"] = db_path
-    if vector_db_path:
-        os.environ["SKYPYDB_VECTOR_PATH"] = vector_db_path
+    def __init__(
+        self,
+        api_host: str = "0.0.0.0",
+        api_port: int = 8000,
+        dashboard_port: int = 3000,
+        db_path: Optional[str] = None,
+        vector_db_path: Optional[str] = None,
+    ):
+        self.api_host = api_host
+        self.api_port = api_port
+        self.dashboard_port = dashboard_port
+        self.db_path = db_path
+        self.vector_db_path = vector_db_path
+        self.dashboard_dir = Path(__file__).parent.parent / "dashboard"
+        self.frontend_process: Optional[subprocess.Popen] = None
+        self._shutdown_event = threading.Event()
 
-    print(f"[green]Starting API server at http://{host}:{port}[/green]")
 
-    # Run the uvicorn server
-    uvicorn.run(app, host=host, port=port, log_level="info")
+    # set environment variables for database paths
+    def _set_env_vars(self) -> None:
+        """
+        Set environment variables for database paths.
+        """
+
+        if self.db_path:
+            os.environ["SKYPYDB_PATH"] = self.db_path
+        if self.vector_db_path:
+            os.environ["SKYPYDB_VECTOR_PATH"] = self.vector_db_path
 
 
-# start the dashboard frontend server
-def start_dashboard_frontend(
-    dashboard_dir: Path,
-    port: int = 3000,
-) -> None:
-    """
-    Start the Next.js dashboard frontend.
+    # start the API server
+    def _start_api(self) -> None:
+        """
+        Start the FastAPI server.
+        """
 
-    Args:
-        dashboard_dir: Path to the dashboard directory
-        port: Port to run the dashboard on
-    """
-
-    print(f"[green]Starting dashboard frontend at http://localhost:{port}[/green]")
-    print(f"[dim]Dashboard directory: {dashboard_dir}[/dim]\n")
-
-    # Set environment variables for the dashboard
-    env = os.environ.copy()
-    env["PORT"] = str(port)
-
-    try:
-        # Run npm run dev in the dashboard directory
-        subprocess.Popen(
-            ["npm", "run", "dev"],
-            cwd=dashboard_dir,
-            env=env
+        print(f"[green]Starting API server at http://{self.api_host}:{self.api_port}[/green]")
+        uvicorn.run(
+            app,
+            host=self.api_host,
+            port=self.api_port,
+            log_level="info"
         )
-    except subprocess.CalledProcessError as exc:
-        print(f"[red]Error: Dashboard failed to start: {exc}[/red]")
-        sys.exit(1)
 
 
+    # check API server health status before starting dashboard
+    def _wait_for_api(self) -> bool:
+        """
+        Wait for API server to be ready.
+        """
+
+        health_url = f"http://localhost:{self.api_port}/api/health"
+        start_time = time.time()
+
+        while time.time() - start_time < 30:
+            try:
+                urlopen(health_url, timeout=2)
+                print("[green]API server is ready[/green]")
+                return True
+            except URLError:
+                time.sleep(0.5)
+        return False
+
+
+    # stream subprocess output to console
+    def _stream_output(self, pipe: Optional[TextIO], prefix: str = "") -> None:
+        """
+        Stream subprocess output to console.
+        """
+
+        if pipe is None:
+            return
+        try:
+            for line in iter(pipe.readline, ""):
+                if line:
+                    print(f"{prefix}{line}", end="")
+                if self._shutdown_event.is_set():
+                    break
+        finally:
+            pipe.close()
+
+    
+    # start the dashboard frontend server
+    def _start_frontend(self) -> None:
+        """
+        Start the Next.js dashboard frontend.
+        """
+
+        if not self.dashboard_dir.exists():
+            print(f"[red]Error: Dashboard not found at {self.dashboard_dir}[/red]")
+            sys.exit(1)
+
+        print(f"[green]Starting dashboard at http://localhost:{self.dashboard_port}[/green]")
+
+        env = os.environ.copy()
+        env["PORT"] = str(self.dashboard_port)
+
+        try:
+            self.frontend_process = subprocess.Popen(
+                ["npm", "run", "dev"],
+                cwd=self.dashboard_dir,
+                env=env,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                text=True,
+                encoding="utf-8",
+                errors="replace"
+            )
+
+            threading.Thread(
+                target=self._stream_output,
+                args=(self.frontend_process.stdout, "[Dashboard] "),
+                daemon=True
+            ).start()
+            threading.Thread(
+                target=self._stream_output,
+                args=(self.frontend_process.stderr, "[Dashboard] "),
+                daemon=True
+            ).start()
+
+        except FileNotFoundError:
+            print("[red]Error: npm not found. Please install Node.js.[/red]")
+            sys.exit(1)
+        except Exception as exc:
+            print(f"[red]Error: Failed to start dashboard: {exc}[/red]")
+            sys.exit(1)
+
+
+    # shutdown the frontend server
+    def _cleanup(self) -> None:
+        """
+        Terminate frontend process and exit.
+        """
+
+        print("\n[yellow]Shutting down...[/yellow]")
+        self._shutdown_event.set()
+
+        if self.frontend_process:
+            self.frontend_process.terminate()
+            try:
+                self.frontend_process.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.frontend_process.kill()
+
+        sys.exit(0)
+
+
+    # start both backend server and frontend server
+    def start_both(self) -> None:
+        """
+        Start both API server and dashboard frontend.
+        """
+
+        print("[bold cyan]Starting Skypydb Dashboard[/bold cyan]\n")
+
+        signal.signal(signal.SIGINT, lambda s, f: self._cleanup())
+        signal.signal(signal.SIGTERM, lambda s, f: self._cleanup())
+
+        self._set_env_vars()
+
+        # Start API in background thread
+        threading.Thread(target=self._start_api, daemon=True).start()
+
+        if not self._wait_for_api():
+            print("[red]Error: API server failed to start[/red]")
+            sys.exit(1)
+
+        self._start_frontend()
+
+        # Monitor and wait for shutdown
+        try:
+            while not self._shutdown_event.is_set():
+                if self.frontend_process and self.frontend_process.poll() is not None:
+                    if self.frontend_process.returncode != 0:
+                        print(f"[red]Dashboard exited with code {self.frontend_process.returncode}[/red]")
+                    break
+                time.sleep(0.5)
+        except KeyboardInterrupt:
+            pass
+        finally:
+            self._cleanup()
+
+
+    # start only the API server
+    def start_api_only(self) -> None:
+        """
+        Start only the API server.
+        """
+
+        self._set_env_vars()
+        self._start_api()
+
+
+# start both backend server and frontend server
 def start_dashboard(
     api_host: str = "0.0.0.0",
     api_port: int = 8000,
@@ -83,44 +224,34 @@ def start_dashboard(
     vector_db_path: Optional[str] = None,
 ) -> None:
     """
-    Start both the API server and dashboard frontend.
-    
-    This function starts the FastAPI backend server in a separate thread
-    and runs the Next.js frontend in the main thread.
-    
-    Args:
-        api_host: Host to bind the API server to
-        api_port: Port to run the API server on
-        dashboard_port: Port to run the dashboard frontend on
-        db_path: Path to the main database file
-        vector_db_path: Path to the vector database file
+    Start both API server and dashboard.
     """
 
-    # Get the dashboard directory
-    dashboard_dir = Path(__file__).parent.parent / "dashboard"
+    DashboardManager(
+        api_host=api_host,
+        api_port=api_port,
+        dashboard_port=dashboard_port,
+        db_path=db_path,
+        vector_db_path=vector_db_path,
+    ).start_both()
 
-    # Check if dashboard exists
-    if not dashboard_dir.exists():
-        print(f"[red]Error: Dashboard not found at {dashboard_dir}[/red]")
-        sys.exit(1)
 
-    print("[bold cyan]Starting Skypydb Dashboard.[/bold cyan]\n")
+def start_api_server(
+    host: str = "0.0.0.0",
+    port: int = 8000,
+    db_path: Optional[str] = None,
+    vector_db_path: Optional[str] = None,
+) -> None:
+    """
+    Start only the API server.
+    """
 
-    # Start the API server in a separate thread
-    api_thread = threading.Thread(
-        target=start_api_server,
-        args=(api_host, api_port, db_path, vector_db_path),
-        daemon=True
-    )
-    api_thread.start()
-
-    # Wait a moment for the API server to start
-    time.sleep(2)
-
-    # Start the dashboard frontend in the main thread
-
-    start_dashboard_frontend(dashboard_dir, dashboard_port)
-
+    DashboardManager(
+        api_host=host,
+        api_port=port,
+        db_path=db_path,
+        vector_db_path=vector_db_path,
+    ).start_api_only()
 
 if __name__ == "__main__":
     start_dashboard()

@@ -161,7 +161,7 @@ class SkypyCLI:
         print("    salt key as SALT_KEY")
         print(f" to {self.env_file_name}")
         print(f'[green]  Added "{self.env_file_name}" to {self.gitignore_path}[/green]\n')
-        print(f"Write your Skypydb functions in {self.skypydb_folder}\\{self.schema_file_name}")
+        print(f"Write your Skypydb functions in {Path(self.skypydb_folder) / self.schema_file_name}")
         print("Give us feedback at https://github.com/Ahen-Studio/skypy-db/issues")
 
 
@@ -195,7 +195,7 @@ def dev() -> None:
     if selection == "create":
         cli.init_project()
 
-    if selection == "dashboard":
+    elif selection == "dashboard":
         cli.launch_dashboard()
 
 
@@ -213,7 +213,14 @@ def _version_callback(value: bool) -> None:
 # callback for cli app
 @app.callback()
 def main_callback(
-    version: bool = typer.Option(False, "--version", help="Show version and exit", is_eager=True, callback=_version_callback)) -> None:
+    version: bool = typer.Option(
+        False,
+        "--version",
+        help="Show version and exit",
+        is_eager=True,
+        callback=_version_callback
+    )
+) -> None:
     """
     Skypydb CLI - Open Source Reactive and Vector Embedding Database.
     """
