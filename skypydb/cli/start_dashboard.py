@@ -17,6 +17,7 @@ from rich import print
 from skypydb.api.server import app
 
 
+# main class for managing dashboard lifecycle
 class DashboardManager:
     """
     Manages both API server and dashboard frontend lifecycle.
@@ -205,16 +206,6 @@ class DashboardManager:
             self._cleanup()
 
 
-    # start only the API server
-    def start_api_only(self) -> None:
-        """
-        Start only the API server.
-        """
-
-        self._set_env_vars()
-        self._start_api()
-
-
 # start both backend server and frontend server
 def start_dashboard(
     api_host: str = "0.0.0.0",
@@ -234,24 +225,6 @@ def start_dashboard(
         db_path=db_path,
         vector_db_path=vector_db_path,
     ).start_both()
-
-
-def start_api_server(
-    host: str = "0.0.0.0",
-    port: int = 8000,
-    db_path: Optional[str] = None,
-    vector_db_path: Optional[str] = None,
-) -> None:
-    """
-    Start only the API server.
-    """
-
-    DashboardManager(
-        api_host=host,
-        api_port=port,
-        db_path=db_path,
-        vector_db_path=vector_db_path,
-    ).start_api_only()
 
 if __name__ == "__main__":
     start_dashboard()

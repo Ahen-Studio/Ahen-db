@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { useDashboard } from "@/components/dashboard-provider"
 import {
   SidebarInset,
   SidebarProvider,
@@ -11,7 +11,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
 import {
   IconTable,
   IconDatabase,
@@ -20,50 +19,12 @@ import {
   IconAlertCircle,
   IconRefresh,
   IconServerOff,
+  IconChartBar,
 } from "@tabler/icons-react"
-import { getSummary, checkHealth, checkAPIConnection, APIError } from "@/lib/api"
-import { DashboardSummary, HealthStatus } from "@/types"
-import { DatabaseChart } from "@/components/database-chart"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from "recharts"
 
 export default function DashboardPage() {
-  const [summary, setSummary] = useState<DashboardSummary | null>(null)
-  const [health, setHealth] = useState<HealthStatus | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [connectionError, setConnectionError] = useState<string | null>(null)
-
-  async function loadData() {
-    try {
-      setLoading(true)
-      setConnectionError(null)
-      
-      // Check if API is available
-      const isConnected = await checkAPIConnection()
-      if (!isConnected) {
-        setConnectionError("API server is not running. Please start the backend server on port 8000.")
-        return
-      }
-      
-      const [summaryData, healthData] = await Promise.all([
-        getSummary(),
-        checkHealth(),
-      ])
-      setSummary(summaryData)
-      setHealth(healthData)
-    } catch (error) {
-      if (error instanceof APIError && error.isConnectionError) {
-        setConnectionError(error.message)
-      } else {
-        toast.error("Failed to load dashboard data")
-      }
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadData()
-  }, [])
+  const { summary, health, loading, connectionError, refresh } = useDashboard()
 
   const getStatusIcon = (status: string) => {
     if (status === "healthy" || status === "connected") {
@@ -78,6 +39,19 @@ export default function DashboardPage() {
     }
     return "bg-red-500/10 text-red-500 border-red-500/20"
   }
+
+  const chartData = [
+    {
+      name: "Tables",
+      count: summary?.summary.tables.count || 0,
+      color: "#FFD700",
+    },
+    {
+      name: "Collections",
+      count: summary?.summary.collections.count || 0,
+      color: "#FF4500",
+    },
+  ]
 
   return (
     <SidebarProvider
@@ -94,7 +68,6 @@ export default function DashboardPage() {
         <div className="flex flex-1 flex-col" suppressHydrationWarning>
           <div className="@container/main flex flex-1 flex-col gap-2" suppressHydrationWarning>
             <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6" suppressHydrationWarning>
-              {/* Connection Error */}
               {connectionError && (
                 <div className="px-4 lg:px-6">
                   <Card className="border-red-500/50 bg-red-500/10">
@@ -114,7 +87,7 @@ export default function DashboardPage() {
                           python skypydb/api/server.py
                         </code>
                       </div>
-                      <Button onClick={loadData} variant="outline" className="border-red-500/50">
+                      <Button onClick={refresh} variant="outline" className="border-red-500/50">
                         <IconRefresh className="mr-2 h-4 w-4" />
                         Retry Connection
                       </Button>
@@ -123,7 +96,6 @@ export default function DashboardPage() {
                 </div>
               )}
 
-              {/* Stats Cards */}
               <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2 @4xl/main:grid-cols-4" suppressHydrationWarning>
                 {loading ? (
                   <>
@@ -229,18 +201,69 @@ export default function DashboardPage() {
                 )}
               </div>
 
-              {/* Chart */}
               {!connectionError && (
                 <div className="px-4 lg:px-6" suppressHydrationWarning>
-                  <DatabaseChart 
-                    tableCount={summary?.summary.tables.count || 0}
-                    collectionCount={summary?.summary.collections.count || 0}
-                    loading={loading}
-                  />
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <IconChartBar className="h-5 w-5" />
+                        Database Overview
+                      </CardTitle>
+                      <CardDescription>
+                        Number of tables and collections in your database
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      {loading ? (
+                        <Skeleton className="h-64" />
+                      ) : (
+                        <div className="h-64 w-full">
+                          <ResponsiveContainer width="100%" height="100%">
+                            <BarChart
+                              data={chartData}
+                              margin={{
+                                top: 20,
+                                right: 30,
+                                left: 20,
+                                bottom: 5,
+                              }}
+                            >
+                              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                              <XAxis 
+                                dataKey="name" 
+                                tick={{ fill: 'var(--foreground)' }}
+                                axisLine={{ stroke: 'var(--border)' }}
+                                tickLine={{ stroke: 'var(--border)' }}
+                              />
+                              <YAxis 
+                                tick={{ fill: 'var(--foreground)' }}
+                                axisLine={{ stroke: 'var(--border)' }}
+                                tickLine={{ stroke: 'var(--border)' }}
+                                allowDecimals={false}
+                              />
+                              <Tooltip 
+                                contentStyle={{
+                                  backgroundColor: 'var(--card)',
+                                  border: '1px solid var(--border)',
+                                  borderRadius: '6px',
+                                  color: 'var(--card-foreground)',
+                                }}
+                                cursor={{ fill: 'var(--muted)' }}
+                              />
+                              <Bar dataKey="count" radius={[4, 4, 0, 0]}>
+                                {chartData.map((entry, index) => (
+                                  <Cell key={`cell-${index}`} fill={entry.color} />
+                                ))}
+                              </Bar>
+                            </BarChart>
+                          </ResponsiveContainer>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
                 </div>
               )}
 
-              {/* Health Details */}
               {!connectionError && (
                 <div className="px-4 lg:px-6" suppressHydrationWarning>
                   <Card>

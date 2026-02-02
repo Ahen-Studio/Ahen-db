@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
@@ -35,22 +35,36 @@ export default function CollectionsPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
-  async function loadCollections() {
+  const loadCollections = useCallback(async (silent: boolean = false) => {
     try {
-      setLoading(true)
+      if (!silent) {
+        setLoading(true)
+      }
       const data = await listCollections()
       setCollections(data)
     } catch (error) {
-      toast.error("Failed to load collections")
+      if (!silent) {
+        toast.error("Failed to load collections")
+      }
       console.error(error)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
-  }
+  }, [])
 
   useEffect(() => {
-    loadCollections()
-  }, [])
+    // Initial load
+    loadCollections(false)
+    
+    // Auto-refresh every 2 seconds
+    const interval = setInterval(() => {
+      loadCollections(true)
+    }, 2000)
+    
+    return () => clearInterval(interval)
+  }, [loadCollections])
 
   const filteredCollections = collections.filter((collection) =>
     collection.name.toLowerCase().includes(searchTerm.toLowerCase())

@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import Link from "next/link"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
@@ -35,22 +35,36 @@ export default function TablesPage() {
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
 
-  async function loadTables() {
+  const loadTables = useCallback(async (silent: boolean = false) => {
     try {
-      setLoading(true)
+      if (!silent) {
+        setLoading(true)
+      }
       const data = await listTables()
       setTables(data)
     } catch (error) {
-      toast.error("Failed to load tables")
+      if (!silent) {
+        toast.error("Failed to load tables")
+      }
       console.error(error)
     } finally {
-      setLoading(false)
+      if (!silent) {
+        setLoading(false)
+      }
     }
-  }
+  }, [])
 
   useEffect(() => {
-    loadTables()
-  }, [])
+    // Initial load
+    loadTables(false)
+    
+    // Auto-refresh every 2 seconds
+    const interval = setInterval(() => {
+      loadTables(true)
+    }, 2000)
+    
+    return () => clearInterval(interval)
+  }, [loadTables])
 
   const filteredTables = tables.filter((table) =>
     table.name.toLowerCase().includes(searchTerm.toLowerCase())

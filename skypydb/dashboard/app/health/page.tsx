@@ -1,8 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SiteHeader } from "@/components/site-header"
+import { useDashboard } from "@/components/dashboard-provider"
 import {
   SidebarInset,
   SidebarProvider,
@@ -17,41 +17,16 @@ import {
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Badge } from "@/components/ui/badge"
-import { toast } from "sonner"
 import {
   IconActivity,
   IconCircleCheck,
   IconAlertCircle,
   IconRefresh,
   IconDatabase,
-  IconVector,
 } from "@tabler/icons-react"
-import { checkHealth } from "@/lib/api"
-import { HealthStatus } from "@/types"
 
 export default function HealthPage() {
-  const [health, setHealth] = useState<HealthStatus | null>(null)
-  const [loading, setLoading] = useState(true)
-
-  async function loadHealth() {
-    try {
-      setLoading(true)
-      const data = await checkHealth()
-      setHealth(data)
-    } catch (error) {
-      toast.error("Failed to check health status")
-      console.error(error)
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  useEffect(() => {
-    loadHealth()
-    // Auto-refresh every 30 seconds
-    const interval = setInterval(loadHealth, 30000)
-    return () => clearInterval(interval)
-  }, [])
+  const { health, loading, refresh } = useDashboard()
 
   const getStatusIcon = (status: string) => {
     if (status === "healthy" || status === "connected") {
@@ -81,11 +56,11 @@ export default function HealthPage() {
       <AppSidebar variant="inset" />
       <SidebarInset>
         <SiteHeader title="Health Monitoring" />
-        <div className="flex flex-1 flex-col">
-          <div className="@container/main flex flex-1 flex-col gap-2">
-            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+        <div className="flex flex-1 flex-col" suppressHydrationWarning>
+          <div className="@container/main flex flex-1 flex-col gap-2" suppressHydrationWarning>
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6" suppressHydrationWarning>
               {/* Overall Status */}
-              <div className="px-4 lg:px-6">
+              <div className="px-4 lg:px-6" suppressHydrationWarning>
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between">
                     <div className="flex items-center gap-4">
@@ -113,7 +88,7 @@ export default function HealthPage() {
                       <Button
                         variant="outline"
                         size="icon"
-                        onClick={loadHealth}
+                        onClick={refresh}
                         disabled={loading}
                       >
                         <IconRefresh className={`h-4 w-4 ${loading ? "animate-spin" : ""}`} />
@@ -124,7 +99,7 @@ export default function HealthPage() {
               </div>
 
               {/* Database Status Cards */}
-              <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2">
+              <div className="grid gap-4 px-4 lg:px-6 @xl/main:grid-cols-2" suppressHydrationWarning>
                 {/* Main Database */}
                 <Card>
                   <CardHeader>
@@ -201,7 +176,7 @@ export default function HealthPage() {
               </div>
 
               {/* Raw Health Data */}
-              <div className="px-4 lg:px-6">
+              <div className="px-4 lg:px-6" suppressHydrationWarning>
                 <Card>
                   <CardHeader>
                     <CardTitle>Raw Health Data</CardTitle>
