@@ -6,8 +6,8 @@ import os
 import time
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from skypydb.db.database import Database
-from skypydb.db.vector_database import VectorDatabase
+from skypydb.database.database import Database
+from skypydb.database.vector_database import VectorDatabase
 
 
 # data classes

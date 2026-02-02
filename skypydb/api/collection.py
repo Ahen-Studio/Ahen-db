@@ -5,7 +5,7 @@ Collection class for managing vector collections.
 from typing import Any, Dict, List, Optional, TYPE_CHECKING
 
 if TYPE_CHECKING:
-    from skypydb.db.vector_database import VectorDatabase
+    from skypydb.database.vector_database import VectorDatabase
 
 
 # main class for managing vector collections

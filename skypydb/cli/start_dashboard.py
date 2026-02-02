@@ -104,7 +104,7 @@ class DashboardManager:
         finally:
             pipe.close()
 
-    
+
     # start the dashboard frontend server
     def _start_frontend(self) -> None:
         """

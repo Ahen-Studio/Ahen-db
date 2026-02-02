@@ -6,7 +6,7 @@ import importlib
 import importlib.util
 import os
 from typing import Dict, Optional
-from skypydb.db.database import Database
+from skypydb.database.database import Database
 from skypydb.errors import TableAlreadyExistsError, TableNotFoundError
 from skypydb.table.table import Table
 from skypydb.schema import Schema

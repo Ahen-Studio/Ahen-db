@@ -3,7 +3,7 @@ Table API for managing data.
 """
 
 from typing import Any, Dict, List, Optional
-from skypydb.db.database import Database
+from skypydb.database.database import Database
 from skypydb.errors import TableNotFoundError
 
 
