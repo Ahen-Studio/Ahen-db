@@ -1,0 +1,3 @@
+"""
+Server module for Skypydb.
+"""

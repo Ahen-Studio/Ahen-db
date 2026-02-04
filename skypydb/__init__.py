@@ -1,25 +1,25 @@
 """
-Skypydb - Open Source Reactive Database for Python.
+Skypydb - Open Source Reactive and Vector Embedding Database for Python.
 """
 
-from .api.client import Client
-from .api.vector_client import VectorClient
-from .api.collection import Collection
-from .errors import (
+from skypydb.api.client import Client
+from skypydb.api.vector_client import VectorClient
+from skypydb.api.collection import Collection
+from skypydb.errors import (
     DatabaseError,
     InvalidSearchError,
     SkypydbError,
     TableAlreadyExistsError,
-    TableNotFoundError,
+    TableNotFoundError
 )
-from .security import (
+from skypydb.security import (
     EncryptionManager,
     EncryptionError,
-    create_encryption_manager,
+    create_encryption_manager
 )
-from .embeddings import (
+from skypydb.embeddings import (
     OllamaEmbedding,
-    get_embedding_function,
+    get_embedding_function
 )
 
 __version__ = "0.1.10"
@@ -37,5 +37,5 @@ __all__ = [
     "EncryptionError",
     "create_encryption_manager",
     "OllamaEmbedding",
-    "get_embedding_function",
+    "get_embedding_function"
 ]

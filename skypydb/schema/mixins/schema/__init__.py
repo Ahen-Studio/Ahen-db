@@ -1,5 +1,5 @@
 """
-
+Schema mixin module for Skypydb.
 """
 
 from skypydb.schema.mixins.schema.sysindex import SysIndex

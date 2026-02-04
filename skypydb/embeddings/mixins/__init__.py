@@ -2,9 +2,12 @@
 Embedding function module.
 """
 
-from .embeddings_fn import EmbeddingsFn
-from .sysget import SysGet, get_embedding_function
-from .utils import Utils
+from skypydb.embeddings.mixins.embeddings_fn import EmbeddingsFn
+from skypydb.embeddings.mixins.sysget import (
+    SysGet,
+    get_embedding_function
+)
+from skypydb.embeddings.mixins.utils import Utils
 
 __all__ = [
     "EmbeddingsFn",

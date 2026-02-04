@@ -1,13 +1,13 @@
 """
-Values module for Skypydb.
+Values mixin module for Skypydb.
 """
 
-from .validator import Validator
-from .optionalvalidator import OptionalValidator
-from .booleanvalidator import BooleanValidator
-from .stringvalidator import StringValidator
-from .intvalidator import Int64Validator
-from .floatvalidator import Float64Validator
+from skypydb.schema.mixins.values.validator import Validator
+from skypydb.schema.mixins.values.optionalvalidator import OptionalValidator
+from skypydb.schema.mixins.values.booleanvalidator import BooleanValidator
+from skypydb.schema.mixins.values.stringvalidator import StringValidator
+from skypydb.schema.mixins.values.intvalidator import Int64Validator
+from skypydb.schema.mixins.values.floatvalidator import Float64Validator
 
 __all__ = [
     "Validator",

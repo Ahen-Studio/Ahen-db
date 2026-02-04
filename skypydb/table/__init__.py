@@ -2,6 +2,6 @@
 Table module.
 """
 
-from .table import Table
+from skypydb.table.table import Table
 
 __all__ = ["Table"]

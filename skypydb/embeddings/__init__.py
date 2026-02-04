@@ -2,8 +2,8 @@
 Embeddings module.
 """
 
-from .ollama import OllamaEmbedding
-from .mixins import (
+from skypydb.embeddings.ollama import OllamaEmbedding
+from skypydb.embeddings.mixins import (
     EmbeddingsFn,
     SysGet,
     Utils,
