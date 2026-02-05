@@ -8,7 +8,6 @@ from typing import (
     Dict,
     Any
 )
-from skypydb.security.validation import InputValidator
 from skypydb.security.constants import (
     MAX_TABLE_NAME_LENGTH,
     MAX_COLUMN_NAME_LENGTH,
@@ -23,11 +22,9 @@ class SysValidation:
     @classmethod
     def __init__(
         cls,
-        input_validator: "InputValidator",
         sys_check: "SysCheck",
         sys_sanitize: "SysSanitize"
     ):
-        cls.input_validator = input_validator
         cls.sys_check = sys_check
         cls.sys_sanitize = sys_sanitize
 
@@ -67,7 +64,7 @@ class SysValidation:
             )
 
         # check for SQL injection patterns
-        if cls.sys_check._contains_sql_injection(table_name):
+        if cls._contains_sql_injection(table_name):
             raise ValidationError("Table name contains potentially dangerous characters")
         return table_name
 
@@ -107,7 +104,7 @@ class SysValidation:
             )
 
         # check for SQL injection patterns
-        if cls.sys_check._contains_sql_injection(column_name):
+        if cls._contains_sql_injection(column_name):
             raise ValidationError("Column name contains potentially dangerous characters")
         return column_name
 
@@ -159,7 +156,6 @@ class SysValidation:
         Raises:
             ValidationError: If data is invalid
         """
-        from skypydb.security.mixins.validation.syssanitize import SysSanitize
 
         if not isinstance(data, dict):
             raise ValidationError("Data must be a dictionary")
@@ -168,18 +164,18 @@ class SysValidation:
 
         for key, value in data.items():
             # validate column name
-            validated_key = SysValidation.validate_column_name(key)
+            validated_key = cls.validate_column_name(key)
 
             # validate value based on type
             if isinstance(value, str):
-                validated_value = SysSanitize.sanitize_string(value)
+                validated_value = cls.sanitize_string(value)
             elif isinstance(value, (int, float, bool)):
                 validated_value = value
             elif value is None:
                 validated_value = None
             else:
                 # convert to string for other types
-                validated_value = SysSanitize.sanitize_string(str(value))
+                validated_value = cls.sanitize_string(str(value))
 
             validated_data[validated_key] = validated_value
         return validated_data
@@ -214,18 +210,18 @@ class SysValidation:
             # validate value(s)
             if isinstance(value, list):
                 validated_value = [
-                    cls.sys_sanitize.sanitize_string(str(v)) if not isinstance(v, (int, float, bool, type(None)))
+                    cls.sanitize_string(str(v)) if not isinstance(v, (int, float, bool, type(None)))
                     else v
                     for v in value
                 ]
             elif isinstance(value, str):
-                validated_value = cls.sys_sanitize.sanitize_string(value)
+                validated_value = cls.sanitize_string(value)
             elif isinstance(value, (int, float, bool)):
                 validated_value = value
             elif value is None:
                 validated_value = None
             else:
-                validated_value = cls.sys_sanitize.sanitize_string(str(value))
+                validated_value = cls.sanitize_string(str(value))
 
             validated_filters[validated_key] = validated_value
         return validated_filters

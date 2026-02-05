@@ -6,8 +6,8 @@ import os
 import time
 from typing import Dict, List, Optional, Any
 from dataclasses import dataclass
-from skypydb.database.database import Database
-from skypydb.database.vector_database import VectorDatabase
+from skypydb.database.reactive_db import ReactiveDatabase
+from skypydb.database.vector_db import VectorDatabase
 
 
 # data classes
@@ -54,13 +54,13 @@ class DatabaseConnection:
     """
 
     @staticmethod
-    def get_main() -> Database:
+    def get_main() -> ReactiveDatabase:
         """
         Get main database instance from environment.
         """
 
         path = os.environ.get('SKYPYDB_PATH', './db/_generated/skypydb.db')
-        return Database(path)
+        return ReactiveDatabase(path)
 
     @staticmethod
     def get_vector() -> VectorDatabase:
@@ -174,7 +174,7 @@ class TableAPI:
 
 
     # get information about a specific table
-    def _get_info(self, db: Database, table_name: str) -> Dict[str, Any]:
+    def _get_info(self, db: ReactiveDatabase, table_name: str) -> Dict[str, Any]:
         """
         Get information about a specific table.
         """

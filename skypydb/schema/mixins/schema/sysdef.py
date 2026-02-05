@@ -6,11 +6,14 @@ from typing import (
     List,
     Dict,
     Any,
-    Optional
+    Optional,
+    TYPE_CHECKING
 )
 from skypydb.schema.values import Validator
-from skypydb.schema.schema import TableDefinition
 from skypydb.schema.mixins.schema.sysschema import SysSchema
+
+if TYPE_CHECKING:
+    from skypydb.schema.schema import TableDefinition
 
 class SysDef:
     def __init__(
@@ -46,6 +49,7 @@ def defineTable(
         .index("by_age", ["age"])
     """
 
+    from skypydb.schema.schema import TableDefinition
     return TableDefinition(columns)
 
 def defineSchema(

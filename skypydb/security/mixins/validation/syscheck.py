@@ -3,17 +3,10 @@ Module containing the SysCheck class, which is used to check SQL queries for pot
 """
 
 import re
-from skypydb.security.validation import InputValidator
 from skypydb.security.constants import SQL_INJECTION_PATTERNS
 
 # Defer type annotation to avoid circular import
 class SysCheck:
-    def __init__(
-        self,
-        input_validator: "InputValidator"
-    ):
-        self.input_validator = input_validator
-
     @classmethod
     def _contains_sql_injection(
         cls,

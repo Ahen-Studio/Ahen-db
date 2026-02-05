@@ -5,21 +5,24 @@ Module containing the SysSchema class, which is used to perform get operations o
 from typing import (
     List,
     Dict,
-    Optional
+    Optional,
+    TYPE_CHECKING
 )
-from skypydb.schema.schema import TableDefinition
+
+if TYPE_CHECKING:
+    from skypydb.schema.schema import TableDefinition
 
 class SysSchema:
     def __init__(
         self,
-        tables: Dict[str, TableDefinition]
+        tables: Dict[str, "TableDefinition"]
     ):
         self.tables = tables
 
     def get_table_definition(
         self,
         table_name: str
-    ) -> Optional[TableDefinition]:
+    ) -> Optional["TableDefinition"]:
         """
         Get a table definition by name.
 

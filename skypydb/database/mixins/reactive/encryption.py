@@ -36,7 +36,7 @@ class Encryption:
         self.encrypted_fields = encrypted_fields if encrypted_fields is not None else []
 
         # initialize encryption manager
-        self.encryption = EncryptionManager(encryption_key=encryption_key, salt=salt)
+        self._encryption_manager = EncryptionManager(encryption_key=encryption_key, salt=salt)
 
     def encrypt_data(
         self,
@@ -52,7 +52,7 @@ class Encryption:
             Dictionary with encrypted fields
         """
 
-        if not self.encryption.enabled:
+        if not self._encryption_manager.enabled:
             return data
 
         # determine which fields to encrypt
@@ -61,7 +61,7 @@ class Encryption:
             if key in self.encrypted_fields
         ]
 
-        return self.encryption.encrypt_dict(data, fields_to_encrypt)
+        return self._encryption_manager.encrypt_dict(data, fields_to_encrypt)
 
     def decrypt_data(
         self,
@@ -77,7 +77,7 @@ class Encryption:
             Dictionary with decrypted fields
         """
 
-        if not self.encryption.enabled:
+        if not self._encryption_manager.enabled:
             return data
 
         # determine which fields to decrypt
@@ -86,4 +86,4 @@ class Encryption:
             if key in self.encrypted_fields
         ]
 
-        return self.encryption.decrypt_dict(data, fields_to_decrypt)
+        return self._encryption_manager.decrypt_dict(data, fields_to_decrypt)

@@ -9,7 +9,6 @@ from typing import (
     List,
     Callable
 )
-from skypydb.embeddings import OllamaEmbedding
 
 class SysGet:
     def _get_embedding(
@@ -30,6 +29,7 @@ class SysGet:
             ValueError: If embedding generation fails
         """
 
+        from skypydb.embeddings.ollama import OllamaEmbedding
         self.embedder = OllamaEmbedding()
 
         url = f"{self.embedder.base_url}/api/embeddings"
@@ -105,4 +105,5 @@ def get_embedding_function(
         embeddings = embed_fn(["Hello world", "How are you?"])
     """
 
+    from skypydb.embeddings.ollama import OllamaEmbedding
     return OllamaEmbedding(model=model, base_url=base_url)
