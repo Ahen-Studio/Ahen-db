@@ -3,12 +3,10 @@ Vector Client API for Skypydb.
 """
 
 import os
-from os.path import exists
 from typing import Dict
 from skypydb.database.vector_db import VectorDatabase
 from skypydb.embeddings.ollama import OllamaEmbedding
 from skypydb.api.collection import Collection
-from skypydb.errors import DatabaseError
 from skypydb.api.mixins.vector import (
     SysCreate,
     SysGet,

@@ -2,11 +2,9 @@
 Client API for Skypydb.
 """
 
-from nt import mkdir
 import os
 from typing import Optional
 from skypydb.database.reactive_db import ReactiveDatabase
-from skypydb.errors import DatabaseError
 from skypydb.api.mixins.reactive import (
     SysCreate,
     SysGet,
