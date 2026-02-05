@@ -9,6 +9,9 @@ from typing import (
 from skypydb.embeddings.mixins.sysget import SysGet
 
 class EmbeddingsFn:
+    def __init__(self) -> None:
+        self._dimension: Optional[int] = None
+
     def embed(
         self,
         texts: List[str]

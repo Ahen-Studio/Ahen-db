@@ -4,7 +4,7 @@ import skypydb
 client = skypydb.VectorClient()
 
 # Create a collection
-collection = client.create_collection("my-documents")
+collection = client.get_or_create_collection("my-documents")
 
 # Add documents (automatically embedded using Ollama)
 collection.add(
@@ -20,7 +20,8 @@ results = collection.query(
 )
 
 # Access results
-for i, doc_id in enumerate(results["ids"][0]):
-    print(f"ID: {doc_id}")
-    print(f"Document: {results['documents'][0][i]}")
-    print(f"Distance: {results['distances'][0][i]}")
+if not results:
+    print("No results found.")
+else:
+    for i, doc_id in enumerate(results["ids"][0]):
+        print(f"{doc_id}, {results['documents'][0][i]}, {results['distances'][0][i]}")

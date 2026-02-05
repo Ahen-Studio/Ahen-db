@@ -3,7 +3,7 @@ Module containing the SysCreate class, which is used to create a new vector coll
 """
 
 import json
-import datetime
+from datetime import datetime
 from typing import (
     Optional,
     Dict,

@@ -3,7 +3,7 @@ Module containing the SysAdd class, which is used to add items in the collection
 """
 
 import json
-import datetime
+from datetime import datetime
 from typing import (
     Dict,
     Any,
