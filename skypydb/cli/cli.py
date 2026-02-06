@@ -14,6 +14,8 @@ from urllib.request import (
 )
 from zipfile import ZipFile
 from pathlib import PurePosixPath
+import subprocess
+import shutil
 import typer
 import questionary
 from rich import print
@@ -40,7 +42,7 @@ class SkypyCLI:
         repo_dashboard_path: str = "dashboard",
         gitignore_path: str = ".gitignore",
         gitignore_entry: str = ".env.local",
-        cwd: Path = Path.cwd(),
+        cwd: Path = Path.cwd()
     ):
         """
         Initialize the CLI with configuration variables.
@@ -55,6 +57,82 @@ class SkypyCLI:
         self.gitignore_path = gitignore_path
         self.gitignore_entry = gitignore_entry
         self.cwd = cwd
+
+    def launch_dashboard(
+        self,
+        api_port: int = 8000,
+        dashboard_port: int = 3000
+    ) -> None:
+        """
+        Launch the FastAPI server and the dashboard dev server.
+        """
+
+        dashboard_dir = self.cwd / self.skypydb_folder / self.generated_folder / self.repo_dashboard_path
+        if not dashboard_dir.exists():
+            print(
+                f"[yellow]Dashboard folder not found at {dashboard_dir}. "
+                "Run project initialization first.[/yellow]"
+            )
+            return
+
+        api_command = [
+            "python",
+            "-c",
+            (
+                "import uvicorn; "
+                "import skypydb.server.fastapi.server as server; "
+                f"uvicorn.run(server.app, host='0.0.0.0', port={api_port})"
+            ),
+        ]
+
+        npm_path = shutil.which("npm") or shutil.which("npm.cmd")
+        if not npm_path:
+            print("[yellow]npm was not found in PATH. Please install Node.js/npm and try again.[/yellow]")
+            return
+
+        dashboard_command = [
+            npm_path,
+            "run",
+            "dev",
+            "--",
+            "--port",
+            str(dashboard_port)
+        ]
+
+        print(f"[green]Starting API server on port {api_port}[/green]")
+        api_process = subprocess.Popen(
+            api_command,
+            cwd=str(self.cwd)
+        )
+
+        try:
+            next_bin = dashboard_dir / "node_modules" / ".bin" / "next.cmd"
+            if not next_bin.exists():
+                print("[yellow]Installing dashboard dependencies (npm install).[/yellow]")
+                install_process = subprocess.Popen(
+                    [npm_path,
+                    "install"
+                ], cwd=str(dashboard_dir))
+                install_process.wait()
+
+            print(f"[green]Starting dashboard on port {dashboard_port}[/green]")
+            dashboard_process = subprocess.Popen(
+                dashboard_command,
+                cwd=str(dashboard_dir)
+            )
+        except FileNotFoundError as exc:
+            print(f"[yellow]Failed to start dashboard: {exc}[/yellow]")
+            api_process.terminate()
+            return
+
+        try:
+            api_process.wait()
+            dashboard_process.wait()
+        except KeyboardInterrupt:
+            print("\n[yellow]Shutting down servers.[/yellow]")
+        finally:
+            api_process.terminate()
+            dashboard_process.terminate()
 
     def init_project(self) -> None:
         """
@@ -207,7 +285,7 @@ def dev() -> None:
     if selection == "create":
         cli.init_project()
     elif selection == "dashboard":
-        pass
+        cli.launch_dashboard()
 
 def _version_callback(value: bool) -> None:
     """
