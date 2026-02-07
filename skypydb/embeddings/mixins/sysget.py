@@ -57,7 +57,6 @@ class SysGet:
                         f"Make sure model '{self.embedder.model}' is an embedding model."
                     )
                 return embedding
-
         except urllib.error.URLError as e:
             raise ConnectionError(
                 f"Cannot connect to Ollama at {self.embedder.base_url}. "

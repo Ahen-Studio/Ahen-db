@@ -21,5 +21,4 @@ class Utils:
         """
         
         self.embeddingfn = EmbeddingsFn()
-
         return self.embeddingfn.embed(texts)

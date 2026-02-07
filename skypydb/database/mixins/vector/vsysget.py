@@ -35,7 +35,6 @@ class VSysGet:
         """
 
         collection_name = InputValidator.validate_table_name(collection_name)
-
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
 
@@ -70,13 +69,10 @@ class VSysGet:
                 continue
 
             results["ids"].append(item["id"])
-
             if results["embeddings"] is not None:
                 results["embeddings"].append(item["embedding"])
-
             if results["documents"] is not None:
                 results["documents"].append(item["document"])
-
             if results["metadatas"] is not None:
                 results["metadatas"].append(item["metadata"])
         return results

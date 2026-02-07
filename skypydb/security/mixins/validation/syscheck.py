@@ -5,7 +5,6 @@ Module containing the SysCheck class, which is used to check SQL queries for pot
 import re
 from skypydb.security.constants import SQL_INJECTION_PATTERNS
 
-# Defer type annotation to avoid circular import
 class SysCheck:
     @classmethod
     def _contains_sql_injection(

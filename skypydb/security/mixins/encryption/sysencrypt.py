@@ -13,7 +13,7 @@ class SysEncrypt:
     def __init__(
         self,
         encryption_key: Optional[str] = None,
-        salt: Optional[bytes] = None,
+        salt: Optional[bytes] = None
     ):
         if encryption_key is not None and not encryption_key.strip():
             raise EncryptionError("encryption_key must be a non-empty string")
@@ -33,7 +33,7 @@ class SysEncrypt:
 
     def encrypt(
         self,
-        plaintext: str,
+        plaintext: str
     ) -> str:
         """
         Encrypt plaintext data.
@@ -67,14 +67,13 @@ class SysEncrypt:
 
             # encode to base64 for storage
             return base64.b64encode(encrypted_data).decode('utf-8')
-
         except Exception as e:
             raise EncryptionError(f"Encryption failed: {str(e)}")
 
     def encrypt_dict(
         self,
         data: dict,
-        fields_to_encrypt: Optional[list] = None,
+        fields_to_encrypt: Optional[list] = None
     ) -> dict:
         """
         Encrypt specific fields in a dictionary.

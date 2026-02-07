@@ -36,6 +36,5 @@ class Table(
 
         self.db = db
         self.table_name = table_name
-
         if not self.db.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")

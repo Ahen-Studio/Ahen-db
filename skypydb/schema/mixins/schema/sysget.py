@@ -53,7 +53,6 @@ class SysGet:
             base_validator = getattr(validator, "validator", validator)
             if col_name in ["id", "created_at"]:
                 continue
-
             # map validators to SQL types
             if isinstance(base_validator, Int64Validator):
                 sql_type = "INTEGER"
@@ -65,7 +64,6 @@ class SysGet:
                 sql_type = "TEXT"  # default for strings and other types
 
             sql_columns.append(f"[{col_name}] {sql_type}")
-
         return sql_columns
 
     def get_sql_indexes(self) -> List[str]:
@@ -86,5 +84,4 @@ class SysGet:
             sql_indexes.append(
                 f"CREATE INDEX IF NOT EXISTS [{index_name}] ON [{self.table_name}] ({fields})"
             )
-
         return sql_indexes

@@ -1,8 +1,13 @@
 """
-
+Module containing the SysCreate class, which is used to create a collection.
 """
 
-from typing import Any, Dict, Optional, TYPE_CHECKING
+from typing import (
+    Any,
+    Dict,
+    Optional,
+    TYPE_CHECKING
+)
 
 if TYPE_CHECKING:
     from skypydb.api.collection import Collection

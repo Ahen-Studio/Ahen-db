@@ -1,5 +1,5 @@
 """
-
+Module containing the Utils class, which is used to do a bunch of stuff related to get operation in a collection.
 """
 
 from typing import (

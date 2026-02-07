@@ -1,5 +1,5 @@
 """
-
+Module containing the SysGet class, which is used to get items from a collection.
 """
 
 from typing import (
@@ -57,7 +57,6 @@ class SysGet:
             where_document=where_document,
             include=include
         )
-
         # apply limit and offset
         if offset is not None or limit is not None:
             start = offset or 0

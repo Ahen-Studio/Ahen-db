@@ -23,5 +23,5 @@ __all__ = [
     "Encryption",
     "RSysAdd",
     "RSysDelete",
-    "RSysSearch",
+    "RSysSearch"
 ]

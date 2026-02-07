@@ -1,5 +1,5 @@
 """
-
+Vector mixins API client module for Skypydb
 """
 
 from skypydb.api.mixins.vector.syscreate import SysCreate

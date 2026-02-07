@@ -1,8 +1,11 @@
 """
-
+Module containing the SysList class, which is used to list all collections in the database.
 """
 
-from typing import List, TYPE_CHECKING
+from typing import (
+    List,
+    TYPE_CHECKING
+)
 
 if TYPE_CHECKING:
     from skypydb.api.collection import Collection
@@ -27,7 +30,6 @@ class SysList:
 
         for collection_info in self._db.list_collections():
             name = collection_info["name"]
-
             # use cached instance if available
             if name in self._collections:
                 collections.append(self._collections[name])

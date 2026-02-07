@@ -153,11 +153,9 @@ class AuditTable:
                 if value is None and optional:
                     validated_data[key] = None
                     continue
-
                 # skip "auto" type
                 if expected_type == "auto" or expected_type == "id":
                     continue
-
                 # type conversion and validation
                 if expected_type is str or expected_type == "str":
                     validated_data[key] = str(value)
@@ -186,5 +184,4 @@ class AuditTable:
             else:
                 # column not in config, store as-is
                 validated_data[key] = value
-
         return validated_data

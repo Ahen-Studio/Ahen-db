@@ -1,5 +1,5 @@
 """
-
+Module containing the Utils class, which is used to check and reset the database.
 """
 
 import time
@@ -20,7 +20,6 @@ class Utils:
 
         # prefer a single backend operation if available
         reset_method = None
-
         if hasattr(self._db, "reset"):
             reset_method = getattr(self._db, "reset")
         elif hasattr(self._db, "clear"):

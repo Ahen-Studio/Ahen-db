@@ -43,7 +43,6 @@ class SysDelete:
 
         # validate table name
         table_name = InputValidator.validate_table_name(table_name)
-
         if not self.audit.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")
 

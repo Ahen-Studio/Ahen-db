@@ -63,11 +63,9 @@ class RSysSearch:
         # validate filters
         if filters:
             filters = InputValidator.validate_filter_dict(filters)
-
         # sanitize index value
         if index is not None:
             index = InputValidator.sanitize_string(str(index))
-
         if not self.audit.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")
 
@@ -81,7 +79,6 @@ class RSysSearch:
             non_standard_columns = [
                 col for col in columns if col not in ("id", "created_at")
             ]
-
             if non_standard_columns:
                 # search index value in any of the non-standard columns
                 index_conditions = []
@@ -89,7 +86,6 @@ class RSysSearch:
                     index_conditions.append(f"[{col}] = ?")
                     params.append(str(index))
                 conditions.append(f"({' OR '.join(index_conditions)})")
-
         # add additional filters (AND conditions)
         for column, value in filters.items():
             # handle list values, use IN clause
@@ -120,5 +116,4 @@ class RSysSearch:
                 results.append(decrypted_row)
             else:
                 results.append(row_dict)
-
         return results

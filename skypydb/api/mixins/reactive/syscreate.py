@@ -1,5 +1,5 @@
 """
-
+Module containing the SysCreate class, which is used to create a table.
 """
 
 import importlib
@@ -42,7 +42,6 @@ class SysCreate:
                 module = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(module)
                 schema = getattr(module, "schema", None)
-
         # if not found in cwd, try to load from the installed package location
         if schema is None:
             package_root = os.path.dirname(os.path.dirname(__file__))
@@ -53,7 +52,6 @@ class SysCreate:
                     module = importlib.util.module_from_spec(spec)
                     spec.loader.exec_module(module)
                     schema = getattr(module, "schema", None)
-
         if schema is None:
             raise ValueError(
                 "No 'schema' object found in db/schema.py. "

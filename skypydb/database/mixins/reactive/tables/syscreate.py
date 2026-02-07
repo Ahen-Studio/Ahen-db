@@ -59,7 +59,6 @@ class SysCreate:
         # validate column names
         for col_name in table_def.columns.keys():
             InputValidator.validate_column_name(col_name)
-
         if self.audit.table_exists(table_name):
             raise TableAlreadyExistsError(f"Table '{table_name}' already exists")
 
@@ -77,7 +76,6 @@ class SysCreate:
             )
             """
         )
-
         # create indexes
         for index_sql in table_def.get_sql_indexes():
             cursor.execute(index_sql)

@@ -111,7 +111,6 @@ class AuditCollections:
                         # simple equality check
                         if metadata.get(key) != value:
                             return False
-
         # check document filter
         if where_document is not None:
             document = item.get("document") or ""

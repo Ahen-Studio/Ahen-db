@@ -39,7 +39,6 @@ class SysAdd:
         """
 
         collection_name = InputValidator.validate_table_name(collection_name)
-
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
         if embeddings is None and documents is None:

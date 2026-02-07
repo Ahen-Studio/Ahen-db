@@ -11,7 +11,7 @@ from skypydb.schema.values import Validator
 class SysValidate:
     def __init__(
         self,
-        columns: Dict[str, Validator],
+        columns: Dict[str, Validator]
     ):
         self.columns = columns
 

@@ -1,5 +1,5 @@
 """
-
+Module containing the SysAdd class, which is used to add items to a collection.
 """
 
 from typing import (

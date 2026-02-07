@@ -28,5 +28,5 @@ SQL_INJECTION_PATTERNS = [
     r'EXECUTE\s*\(',
     r'UNION\s+SELECT',
     r'INTO\s+OUTFILE',
-    r'LOAD_FILE',
+    r'LOAD_FILE'
 ]

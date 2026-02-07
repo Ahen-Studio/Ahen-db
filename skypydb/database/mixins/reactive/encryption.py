@@ -60,7 +60,6 @@ class Encryption:
             key for key in data.keys() 
             if key in self.encrypted_fields
         ]
-
         return self._encryption_manager.encrypt_dict(data, fields_to_encrypt)
 
     def decrypt_data(
@@ -85,5 +84,4 @@ class Encryption:
             key for key in data.keys() 
             if key in self.encrypted_fields
         ]
-
         return self._encryption_manager.decrypt_dict(data, fields_to_decrypt)

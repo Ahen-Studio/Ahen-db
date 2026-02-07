@@ -1,5 +1,5 @@
 """
-
+Module containing the SysUpdate class, which is used to update existing items in a collection.
 """
 
 from typing import (

@@ -236,7 +236,6 @@ async def search_vectors(
         query_text = body.get('query_text', '')
         n_results = body.get('n_results', 10)
         metadata_filter = body.get('metadata_filter')
-
         return dashboard_api.vector.search(
             collection_name,
             query_text,

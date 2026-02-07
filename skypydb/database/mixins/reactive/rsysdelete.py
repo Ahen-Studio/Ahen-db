@@ -60,10 +60,8 @@ class RSysDelete:
         # validate filters
         if filters:
             filters = InputValidator.validate_filter_dict(filters)
-
         if not self.audit.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")
-
         if not filters:
             # safety check; don't allow deleting all rows without explicit filters
             raise ValueError("Cannot delete without filters. Use filters to specify which rows to delete.")
@@ -90,5 +88,4 @@ class RSysDelete:
 
         cursor.execute(query, params)
         self.conn.commit()
-
         return cursor.rowcount

@@ -13,14 +13,14 @@ from cryptography.hazmat.backends import default_backend
 class SysPassword:
     def __init__(
         self,
-        iterations: int = 100000,
+        iterations: int = 100000
     ):
         self.iterations = iterations
 
     def _derive_key(
         self,
         password: str,
-        salt: Optional[bytes] = None,
+        salt: Optional[bytes] = None
     ) -> bytes:
         """
         Derive a 256-bit encryption key from a password using PBKDF2HMAC.
@@ -47,7 +47,7 @@ class SysPassword:
 
     def hash_password(
         self,
-        password: str,
+        password: str
     ) -> str:
         """
         Create a secure hash of a password for storage using PBKDF2HMAC with a random salt.
@@ -75,13 +75,12 @@ class SysPassword:
 
         # combine salt and hash
         combined = salt + password_hash
-
         return base64.b64encode(combined).decode('utf-8')
 
     def verify_password(
         self,
         password: str,
-        stored_hash: str,
+        stored_hash: str
     ) -> bool:
         """
         Verify a password against a stored hash.
@@ -115,6 +114,5 @@ class SysPassword:
 
             # compare hashes using constant-time comparison
             return secrets.compare_digest(password_hash, stored_password_hash)
-
         except Exception:
             return False

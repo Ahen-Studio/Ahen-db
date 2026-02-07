@@ -1,5 +1,5 @@
 """
-
+Module containing the SysDelete class, which is used to delete a collection.
 """
 
 class SysDelete:
@@ -25,7 +25,6 @@ class SysDelete:
 
         # delete from database
         self._db.delete_collection(name)
-
         # remove from cache
         if name in self._collections:
             del self._collections[name]

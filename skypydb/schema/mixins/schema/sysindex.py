@@ -14,7 +14,7 @@ from skypydb.schema.values import (
 class SysIndex:
     def __init__(
         self,
-        columns: Dict[str, Validator],
+        columns: Dict[str, Validator]
     ):
         self.columns = columns
         self.indexes: List[Dict[str, Any]] = []

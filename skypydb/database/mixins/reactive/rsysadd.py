@@ -58,11 +58,9 @@ class RSysAdd:
 
         if not self.audit.table_exists(table_name):
             raise TableNotFoundError(f"Table '{table_name}' not found")
-
         # generate ID if needed
         if generate_id:
             data["id"] = str(uuid.uuid4())
-
         # add created_at timestamp
         if "created_at" not in data:
             data["created_at"] = datetime.now().isoformat()
@@ -71,7 +69,6 @@ class RSysAdd:
         columns_to_add = [col for col in data.keys() if col not in ("id", "created_at")]
         if columns_to_add:
             self.audit.add_columns_if_needed(table_name, columns_to_add)
-
         # encrypt sensitive data before storing if encryption is available
         if self.encryption:
             encrypted_data = self.encryption.encrypt_data(data)
@@ -90,5 +87,4 @@ class RSysAdd:
             [str(encrypted_data[col]) for col in columns],
         )
         self.conn.commit()
-
         return data["id"]

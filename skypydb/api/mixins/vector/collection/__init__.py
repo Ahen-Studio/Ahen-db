@@ -1,5 +1,5 @@
 """
-
+Collection mixins API client module for Skypydb
 """
 
 from skypydb.api.mixins.vector.collection.sysadd import SysAdd

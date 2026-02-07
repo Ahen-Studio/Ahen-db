@@ -22,7 +22,6 @@ class SysManager:
         self._salt = salt
         self._key: Optional[bytes] = None
         self._password = SysPassword()
-
         if self.enabled:
             if encryption_key == "":
                 raise EncryptionError("Encryption key must not be empty.")

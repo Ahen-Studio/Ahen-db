@@ -34,7 +34,7 @@ class EncryptionManager(
         self,
         encryption_key: Optional[str] = None,
         iterations: int = 100000,
-        salt: Optional[bytes] = None,
+        salt: Optional[bytes] = None
     ):
         """
         Initialize encryption manager.
@@ -55,11 +55,10 @@ class EncryptionManager(
         self.iterations = iterations
         self._salt = salt
         self._key: Optional[bytes] = None
-
         if self.enabled:
             if encryption_key == "":
                 raise EncryptionError("Encryption key must not be empty.")
-            # Derive a 256-bit key from the password
-            assert encryption_key is not None  # Type narrowing for type checker
+            # derive a 256-bit key from the password
+            assert encryption_key is not None  # type narrowing for type checker
             self._key = self._derive_key(encryption_key, salt=self._salt)
             self._aesgcm = AESGCM(self._key)

@@ -50,7 +50,6 @@ class Utils:
             "SELECT config FROM _skypy_config WHERE table_name = ?", (table_name,)
         )
         row = cursor.fetchone()
-
         if row:
             return json.loads(row[0])
         return None
@@ -137,7 +136,6 @@ class Utils:
                 normalized[col_name] = col_type
             else:
                 normalized[col_name] = _normalize_type(col_type)
-
         return normalized
 
     def table_def_to_config(
@@ -159,7 +157,6 @@ class Utils:
         # convert validators to type strings
         for col_name, validator in table_def.columns.items():
             validator_repr = repr(validator)
-
             # map validator repr to config type
             # check for optional first before checking inner types
             if "v.optional(" in validator_repr:
@@ -184,14 +181,12 @@ class Utils:
                 config[col_name] = "bool"
             else:
                 config[col_name] = "str"  # default
-
         # add index information
         if table_def.indexes:
             config["_indexes"] = [
                 {"name": idx["name"], "fields": idx["fields"]}
                 for idx in table_def.indexes
             ]
-
         return config
 
     def delete_table_config(

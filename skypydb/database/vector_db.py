@@ -43,7 +43,7 @@ class VectorDatabase(
     def __init__(
         self,
         path: str,
-        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None,
+        embedding_function: Optional[Callable[[List[str]], List[List[float]]]] = None
     ):
         """
         Initialize vector database.

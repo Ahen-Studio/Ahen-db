@@ -24,7 +24,6 @@ class OptionalValidator(Validator):
         self.validator = validator
         self.optional = True
 
-
     def validate(
         self,
         value: Any
@@ -36,7 +35,6 @@ class OptionalValidator(Validator):
         if value is None:
             return True
         return self.validator.validate(value)
-
 
     def __repr__(self) -> str:
         return f"v.optional({self.validator})"

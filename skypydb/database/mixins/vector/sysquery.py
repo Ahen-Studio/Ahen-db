@@ -39,7 +39,6 @@ class SysQuery:
         """
         
         collection_name = InputValidator.validate_table_name(collection_name)
-
         if not self.collection_exists(collection_name):
             raise ValueError(f"Collection '{collection_name}' not found")
         if query_embeddings is None and query_texts is None:
@@ -101,7 +100,6 @@ class SysQuery:
                 query_distances.append(distance)
 
             results["ids"].append(query_ids)
-
             if results["embeddings"] is not None:
                 results["embeddings"].append(query_embeddings_result)
             if results["documents"] is not None:

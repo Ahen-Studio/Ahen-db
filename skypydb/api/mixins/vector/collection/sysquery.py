@@ -1,5 +1,5 @@
 """
-
+Module containing the SysQuery class, which is used to query the collection for similar items.
 """
 
 from typing import (

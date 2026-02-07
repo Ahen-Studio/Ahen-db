@@ -1,5 +1,5 @@
 """
-
+Module containing the SysDelete class, which is used to delete a table.
 """
 
 from skypydb.errors import TableNotFoundError

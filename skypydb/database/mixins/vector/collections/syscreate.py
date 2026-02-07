@@ -30,7 +30,6 @@ class SysCreate:
 
         name = InputValidator.validate_table_name(name)
         table_name = f"vec_{name}"
-
         if self.collection_exists(name):
             raise ValueError(f"Collection '{name}' already exists")
 
@@ -52,5 +51,4 @@ class SysCreate:
             "INSERT INTO _vector_collections (name, metadata, created_at) VALUES (?, ?, ?)",
             (name, json.dumps(metadata or {}), datetime.now().isoformat())
         )
-
         self.conn.commit()

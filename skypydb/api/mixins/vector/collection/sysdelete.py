@@ -1,5 +1,5 @@
 """
-
+Module containing the SysDelete class, which is used to delete items from a collection.
 """
 
 from typing import (

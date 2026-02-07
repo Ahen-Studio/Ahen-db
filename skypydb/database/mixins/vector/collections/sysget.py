@@ -27,7 +27,6 @@ class SysGet:
         """
 
         name = InputValidator.validate_table_name(name)
-
         if not self.collection_exists(name):
             return None
 
@@ -38,7 +37,6 @@ class SysGet:
             (name,)
         )
         row = cursor.fetchone()
-
         if row:
             return {
                 "name": row["name"],
@@ -64,7 +62,6 @@ class SysGet:
         """
 
         name = InputValidator.validate_table_name(name)
-
         if not self.collection_exists(name):
             self.create_collection(name, metadata)
 

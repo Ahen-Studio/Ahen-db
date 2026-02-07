@@ -12,7 +12,7 @@ class SysDecrypt:
     def __init__(
         self,
         encryption_key: Optional[str] = None,
-        salt: Optional[bytes] = None,
+        salt: Optional[bytes] = None
     ):
         if encryption_key is not None and not encryption_key.strip():
             raise EncryptionError("encryption_key must be a non-empty string")
@@ -21,7 +21,6 @@ class SysDecrypt:
         self._salt = salt
         self._key: Optional[bytes] = None
         self._password = SysPassword()
-
         if self.enabled:
             if encryption_key == "":
                 raise EncryptionError("Encryption key must not be empty.")
@@ -32,7 +31,7 @@ class SysDecrypt:
 
     def decrypt(
         self,
-        encrypted_data: str,
+        encrypted_data: str
     ) -> str:
         """
         Decrypt encrypted data.
@@ -65,14 +64,13 @@ class SysDecrypt:
                 None
             )
             return plaintext.decode('utf-8')
-
         except Exception as e:
             raise EncryptionError(f"Decryption failed: {str(e)}")
 
     def decrypt_dict(
         self,
         data: dict,
-        fields_to_decrypt: Optional[list] = None,
+        fields_to_decrypt: Optional[list] = None
     ) -> dict:
         """
         Decrypt specific fields in a dictionary.

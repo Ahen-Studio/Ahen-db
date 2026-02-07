@@ -33,7 +33,6 @@ class EmbeddingsFn:
         for text in texts:
             embedding = self.sysget._get_embedding(text)
             embeddings.append(embedding)
-
             # cache the dimension from the first embedding
             if self._dimension is None:
                 self._dimension = len(embedding)

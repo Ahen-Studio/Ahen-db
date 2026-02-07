@@ -48,21 +48,17 @@ class SysValidation:
 
         if not table_name:
             raise ValidationError("Table name cannot be empty")
-
         if not isinstance(table_name, str):
             raise ValidationError("Table name must be a string")
-
         if len(table_name) > MAX_TABLE_NAME_LENGTH:
             raise ValidationError(
                 f"Table name too long (max {MAX_TABLE_NAME_LENGTH} characters)"
             )
-
         if not TABLE_NAME_PATTERN.match(table_name):
             raise ValidationError(
                 "Table name must start with a letter or underscore and contain only "
                 "alphanumeric characters, underscores, and hyphens"
             )
-
         # check for SQL injection patterns
         if cls._contains_sql_injection(table_name):
             raise ValidationError("Table name contains potentially dangerous characters")
@@ -71,7 +67,7 @@ class SysValidation:
     @classmethod
     def validate_column_name(
         cls,
-        column_name: str,
+        column_name: str
     ) -> str:
         """
         Validate a column name.
@@ -88,21 +84,17 @@ class SysValidation:
 
         if not column_name:
             raise ValidationError("Column name cannot be empty")
-
         if not isinstance(column_name, str):
             raise ValidationError("Column name must be a string")
-
         if len(column_name) > MAX_COLUMN_NAME_LENGTH:
             raise ValidationError(
                 f"Column name too long (max {MAX_COLUMN_NAME_LENGTH} characters)"
             )
-
         if not COLUMN_NAME_PATTERN.match(column_name):
             raise ValidationError(
                 "Column name must start with a letter or underscore and contain only "
                 "alphanumeric characters and underscores"
             )
-
         # check for SQL injection patterns
         if cls._contains_sql_injection(column_name):
             raise ValidationError("Column name contains potentially dangerous characters")
@@ -112,7 +104,7 @@ class SysValidation:
     def validate_string_value(
         cls,
         value: str,
-        max_length: Optional[int] = None,
+        max_length: Optional[int] = None
     ) -> str:
         """
         Validate a string value.
@@ -142,7 +134,7 @@ class SysValidation:
     @classmethod
     def validate_data_dict(
         cls,
-        data: Dict[str, Any],
+        data: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Validate a dictionary of data.
@@ -183,7 +175,7 @@ class SysValidation:
     @classmethod
     def validate_filter_dict(
         cls,
-        filters: Dict[str, Any],
+        filters: Dict[str, Any]
     ) -> Dict[str, Any]:
         """
         Validate filter parameters for search/delete operations.
@@ -206,7 +198,6 @@ class SysValidation:
         for key, value in filters.items():
             # validate column name
             validated_key = cls.validate_column_name(key)
-
             # validate value(s)
             if isinstance(value, list):
                 validated_value = [
@@ -252,13 +243,11 @@ class SysValidation:
         for table_name, table_config in config.items():
             # validate table name
             validated_table_name = cls.validate_table_name(table_name)
-
             if not isinstance(table_config, dict):
                 raise ValidationError(
                     f"Configuration for table '{table_name}' must be a dictionary"
                 )
             validated_table_config = {}
-
             for column_name, column_type in table_config.items():
                 # validate column name
                 validated_column_name = cls.validate_column_name(column_name)
