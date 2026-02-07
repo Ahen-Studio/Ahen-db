@@ -11,25 +11,9 @@ from skypydb.table.table import Table
 from skypydb.schema import SysSchema
 
 class SysCreate:
-    def create_table(self) -> Dict[str, Table]:
+    def _load_schema(self) -> SysSchema:
         """
-        Create all tables defined in db/schema.py.
-
-        Returns:
-            Dictionary mapping table names to Table instances
-
-        Raises:
-            TableAlreadyExistsError: If any table already exists
-            ValueError: If schema file is missing or invalid
-
-        Example:
-            # Define your schema in db/schema.py, then:
-            client = skypydb.Client()
-            tables = client.create_table()
-
-            # Access tables
-            users_table = tables["users"]
-            posts_table = tables["posts"]
+        Load schema from ./db/schema.py or package schema.py.
         """
 
         schema = None
@@ -62,6 +46,31 @@ class SysCreate:
             raise ValueError(
                 f"Expected a Schema object, got {type(schema).__name__}"
             )
+        return schema
+
+    def create_table(self) -> Dict[str, Table]:
+        """
+        Create all tables defined in db/schema.py.
+
+        Returns:
+            Dictionary mapping table names to Table instances
+
+        Raises:
+            TableAlreadyExistsError: If any table already exists
+            ValueError: If schema file is missing or invalid
+
+        Example:
+            # Define your schema in db/schema.py, then:
+            client = skypydb.Client()
+            tables = client.create_table()
+
+            # Access tables
+            users_table = tables["users"]
+            posts_table = tables["posts"]
+        """
+
+        schema = self._load_schema()
+
         # create all tables from schema
         created_tables: Dict[str, Table] = {}
         table_names = schema.get_all_table_names()

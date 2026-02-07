@@ -46,7 +46,6 @@ pip install skypydb # python database
 ## TODO
 
 - [ ] Create the dashboard using Next.js and shadcn-ui
-- [ ] Add get_or_create_table argument for the reactive client
 
 ## What's next!
 
@@ -142,22 +141,14 @@ schema = defineSchema({
 
 ```python
 import skypydb
-from skypydb.errors import TableAlreadyExistsError
 
 # Create a client
 client = skypydb.ReactiveClient()
 
 # Create tables from the schema
 # This reads the schema from db/schema.py and creates all tables
-try:
-    tables = client.create_table()
+tables = client.get_or_create_table()
 # if the tables already exists the programe get them instead
-except TableAlreadyExistsError:
-    tables = {
-        "success": client.get_table("success"),
-        "warning": client.get_table("warning"),
-        "error": client.get_table("error"),
-    }
 
 # Access your tables
 success_table = tables["success"]
@@ -323,7 +314,6 @@ print(salt) # don't show this salt to anyone
 ```python
 import os
 import skypydb
-from skypydb.errors import TableAlreadyExistsError
 from dotenv import load_dotenv
 
 # Load environment variables from .env file
@@ -346,15 +336,8 @@ client = skypydb.ReactiveClient(
 )
 
 # All operations work the same - encryption is transparent!
-try:
-    tables = client.create_table()
+tables = client.get_or_create_table()
 # if the tables already exists the programe get them instead
-except TableAlreadyExistsError:
-    tables = {
-        "success": client.get_table("success"),
-        "warning": client.get_table("warning"),
-        "error": client.get_table("error"),
-    }
 
 # Access your tables
 success_table = tables["success"]

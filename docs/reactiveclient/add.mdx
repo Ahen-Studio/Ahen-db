@@ -10,15 +10,8 @@ description: "To add data to a table you will need to create a table"
     ```python Python
     # Create tables from the schema
     # This reads the schema from db/schema.py and creates all tables
-    try:
-        tables = client.create_table()
+    tables = client.get_or_create_table()
     # if the tables already exists the programe get them instead
-    except TableAlreadyExistsError:
-        tables = {
-            "success": client.get_table("success"),
-            "warning": client.get_table("warning"),
-            "error": client.get_table("error"),
-        }
     ```
   </Step>
 
