@@ -1,20 +1,12 @@
 import skypydb
-from skypydb.errors import TableAlreadyExistsError
 
 # Create a client
 client = skypydb.ReactiveClient()
 
 # Create tables from the schema
 # This reads the schema from db/schema.py and creates all tables
-try:
-    tables = client.create_table()
+tables = client.get_or_create_table()
 # if the tables already exists the programe get them instead
-except TableAlreadyExistsError:
-    tables = {
-        "success": client.get_table("success"),
-        "warning": client.get_table("warning"),
-        "error": client.get_table("error"),
-    }
 
 # Access your tables
 success_table = tables["success"]
