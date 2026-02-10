@@ -4,7 +4,7 @@ Welcome to the Skypydb!
 
 This repository is governed by [the Contributor Covenant Code of Conduct](https://github.com/Ahen-Studio/skypydb/blob/main/CODE_OF_CONDUCT.md).
 
-## Whant to contribute to the dashboard
+## Want to contribute to the dashboard
 
 Go to the [dashboard](https://github.com/Ahen-Studio/the-skypydb-dashboard) and start work on it.
 
