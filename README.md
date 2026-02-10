@@ -11,8 +11,7 @@
 <div align="center">
 
 [![PyPI](https://img.shields.io/pypi/v/skypydb.svg)](https://pypi.org/project/skypydb/)
-[![License](https://img.shields.io/github/license/Ahen-Studio/skypy-db)](https://github.com/Ahen-Studio/skypy-db/blob/main/LICENSE)
-[![CodeRabbit Reviews](https://img.shields.io/coderabbit/prs/github/Ahen-Studio/skypy-db?utm_source=oss&utm_medium=github&utm_campaign=Ahen-Studio%2Fskypy-db&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+[![License](https://img.shields.io/github/license/Ahen-Studio/skypydb)](https://github.com/Ahen-Studio/skypydb/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-blue.svg)](https://ahen.mintlify.app/)
 
 </div>
@@ -24,6 +23,9 @@ pip install skypydb # python database
 # cd skypydb
 # pip install -r requirements.txt
 ```
+
+> [!NOTE]
+> While waiting for mem0 to merge the changes necessary for skypydb to function, you can still use mem0 with skypydb by downloading the mem0 folder and placing every file in the correct directory in the mem0 installation folder.
 
 ## Features
 
@@ -43,9 +45,7 @@ pip install skypydb # python database
 
 - Free & Open Source: MIT Licensed
 
-## TODO
-
-- [ ] Create the dashboard using Next.js and shadcn-ui
+- Cross-platform: Windows, Linux, MacOS
 
 ## What's next!
 
@@ -249,8 +249,6 @@ else:
 pip install skypydb[mem0]
 ```
 
-- to use mem0 with skypydb you will need to download the mem0 folder and place every file in the correct directory in the mem0 installation folder.
-
 ```python
 from mem0 import Memory
 
@@ -368,8 +366,8 @@ Learn more on our [Docs](https://ahen.mintlify.app/)
 
 ## All Thanks To Our Contributors:
 
-<a href="https://github.com/Ahen-Studio/skypy-db/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=Ahen-Studio/skypy-db" />
+<a href="https://github.com/Ahen-Studio/skypydb/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=Ahen-Studio/skypydb" />
 </a>
 
 ## License
