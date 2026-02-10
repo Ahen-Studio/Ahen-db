@@ -12,8 +12,6 @@ class SkypyDBConfig(BaseModel):
 
     collection_name: str = Field("mem0", description="Default name for the collection")
     path: Optional[str] = Field(None, description="Path to the database directory")
-    embedding_model: str = Field("mxbai-embed-large", description="Ollama embedding model")
-    ollama_base_url: str = Field("http://localhost:11434", description="Ollama API base URL")
 
     @model_validator(mode="before")
     @classmethod
