@@ -33,7 +33,7 @@ class DatabaseLinker:
         Args:
             folder: Name of the sidecar folder to store metadata files. This folder is created adjacent to database files. Defaults to "link".
             binary_file_type: Mapping from database type to metadata filename. Defaults to {"reactive": "reactivetype.bin", "vector": "vectortype.bin"}.
-            magic: Magic bytes for file validation and identification. Must be 10 bytes. Defaults to b"SKYPYLINKER". Changing this affects discovery behavior.
+            magic: Magic bytes for file validation and identification. Must be 11 bytes. Defaults to b"SKYPYLINKER". Changing this affects discovery behavior.
         """
 
         self.folder = folder
