@@ -21,4 +21,4 @@ class BooleanValidator(Validator):
         return isinstance(value, bool)
 
     def __repr__(self) -> str:
-        return "v.boolean()"
+        return "value.boolean()"

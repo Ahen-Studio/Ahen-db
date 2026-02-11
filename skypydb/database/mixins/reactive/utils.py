@@ -159,25 +159,25 @@ class Utils:
             validator_repr = repr(validator)
             # map validator repr to config type
             # check for optional first before checking inner types
-            if "v.optional(" in validator_repr:
+            if "value.optional(" in validator_repr:
                 # extract the base type from optional
-                if "v.string()" in validator_repr:
+                if "value.string()" in validator_repr:
                     config[col_name] = {"type": "str", "optional": True}
-                elif "v.int64()" in validator_repr:
+                elif "value.int64()" in validator_repr:
                     config[col_name] = {"type": "int", "optional": True}
-                elif "v.float64()" in validator_repr:
+                elif "value.float64()" in validator_repr:
                     config[col_name] = {"type": "float", "optional": True}
-                elif "v.boolean()" in validator_repr:
+                elif "value.boolean()" in validator_repr:
                     config[col_name] = {"type": "bool", "optional": True}
                 else:
                     config[col_name] = {"type": "str", "optional": True}
-            elif "v.string()" in validator_repr:
+            elif "value.string()" in validator_repr:
                 config[col_name] = "str"
-            elif "v.int64()" in validator_repr:
+            elif "value.int64()" in validator_repr:
                 config[col_name] = "int"
-            elif "v.float64()" in validator_repr:
+            elif "value.float64()" in validator_repr:
                 config[col_name] = "float"
-            elif "v.boolean()" in validator_repr:
+            elif "value.boolean()" in validator_repr:
                 config[col_name] = "bool"
             else:
                 config[col_name] = "str"  # default

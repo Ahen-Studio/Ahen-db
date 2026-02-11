@@ -21,4 +21,4 @@ class Float64Validator(Validator):
         return isinstance(value, (int, float)) and not isinstance(value, bool)
 
     def __repr__(self) -> str:
-        return "v.float64()"
+        return "value.float64()"

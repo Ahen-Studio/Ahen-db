@@ -3,7 +3,7 @@ title: Add vector data to a collection
 description: "Add vector data to a collection require an embedding model"
 ---
 
-Skypydb support all the Ollama embedding model, to use the vector part of our database you will need to download [Ollama](https://ollama.com/download) and install an embedding model.
+Skypydb support all the Ollama, OpenAI, Sentence Transformers, embeddings models, to use the vector part of our database you will need either download [Ollama](https://ollama.com/download) and install an embedding model or use an OpenAI API key.
 
 By default Skypydb use [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large).
 
@@ -13,7 +13,44 @@ By default Skypydb use [mxbai-embed-large](https://ollama.com/library/mxbai-embe
 
     ```python Python
     # Create a client
-    client = skypydb.VectorClient()
+    client = skypydb.VectorClient(
+        embedding_provider="ollama",
+        embedding_model_config={
+            "model": "mxbai-embed-large",
+            "base_url": "http://localhost:11434"
+        }
+    )
+
+    # Create a collection
+    collection = client.get_or_create_collection("my-documents")
+    ```
+
+    Use the OpenAI model
+
+    ```python Python
+    # Create a client
+    client = skypydb.VectorClient(
+        embedding_provider="openai",
+        embedding_model_config={
+            "api_key": "your-openai-api-key",
+            "model": "text-embedding-3-small"
+        }
+    )
+
+    # Create a collection
+    collection = client.get_or_create_collection("my-documents")
+    ```
+
+    Use the Sentence Transformers model
+
+    ```python Python
+    # Create a client
+    client = skypydb.VectorClient(
+        embedding_provider="sentence-transformers",
+        embedding_model_config={
+            "model": "all-MiniLM-L6-v2"
+        }
+    )
 
     # Create a collection
     collection = client.get_or_create_collection("my-documents")

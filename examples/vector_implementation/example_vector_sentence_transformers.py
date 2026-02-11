@@ -1,7 +1,12 @@
 import skypydb
 
 # Create a client
-client = skypydb.VectorClient()
+client = skypydb.VectorClient(
+    embedding_provider="sentence-transformers",
+    embedding_model_config={
+        "model": "all-MiniLM-L6-v2"
+    }
+)
 
 # Create a collection
 collection = client.get_or_create_collection("my-documents")

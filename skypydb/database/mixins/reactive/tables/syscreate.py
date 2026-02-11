@@ -45,8 +45,8 @@ class SysCreate:
 
         Example:
             table_def = defineTable({
-                "name": v.string(),
-                "email": v.string()
+                "name": value.string(),
+                "email": value.string()
             })
             .index("by_email", ["email"])
 
