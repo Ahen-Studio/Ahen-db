@@ -90,8 +90,7 @@ class DatabaseConnection:
         return str(default_path)
 
     @staticmethod
-    def discover_links(
-        self
+    def discover_links() -> List[Dict[str, str]]:
     ) -> List[Dict[str, str]]:
         """
         Discover database link metadata from current working directory.
