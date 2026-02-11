@@ -78,8 +78,11 @@ class OpenAIEmbedding(
         self,
         text: str
     ) -> List[float]:
-
-        return self.embed([text])[0]
+        response = self._client.embeddings.create(
+            model=self.model,
+            input=[text]
+        )
+        return list(response.data[0].embedding)
 
     def embed(
         self,
