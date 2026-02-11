@@ -48,6 +48,10 @@ pip install skypydb # python database
 
 - Cross-platform: Windows, Linux, MacOS
 
+## TODO
+
+- [ ] Code a rust client
+
 ## What's next!
 
 - give us ideas!
