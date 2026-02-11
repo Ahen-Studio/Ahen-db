@@ -11,7 +11,7 @@
 <div align="center">
 
 ![GitHub commit activity](https://img.shields.io/github/commit-activity/m/Ahen-Studio/skypydb)
-[![Crates.io]]
+[![Crates.io](https://img.shields.io/crates/v/skypydb)](https://crates.io/crates/skypydb)
 [![PyPI](https://img.shields.io/pypi/v/skypydb.svg)](https://pypi.org/project/skypydb/)
 [![License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/Ahen-Studio/skypydb/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-blue.svg)](https://ahen.mintlify.app/)
