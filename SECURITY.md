@@ -29,7 +29,7 @@
 
 ## Reporting a Vulnerability
 
-- If you notice a vulnerability in our project, please report it privately using GitHub's security advisory reporting feature for this repository or another private contact method described in this project.
+- If you notice a vulnerability in our project, please report it privately using GitHub's security advisory reporting feature for this repository.
 
 - Or if you have already resolved the issue, you can submit a pull request (https://github.com/Ahen-Studio/skypydb/pulls).
 
