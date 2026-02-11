@@ -39,11 +39,11 @@ def defineTable(
 
     Example:
         users = defineTable({
-            "name": v.string(),
-            "email": v.string(),
-            "age": v.int64(),
-            "active": v.boolean(),
-            "bio": v.optional(v.string())
+            "name": value.string(),
+            "email": value.string(),
+            "age": value.int64(),
+            "active": value.boolean(),
+            "bio": value.optional(value.string())
         })
         .index("by_email", ["email"])
         .index("by_age", ["age"])
@@ -67,14 +67,14 @@ def defineSchema(
     Example:
         schema = defineSchema({
             "users": defineTable({
-                "name": v.string(),
-                "email": v.string()
+                "name": value.string(),
+                "email": value.string()
             })
             .index("by_name", ["name"]),
             
             "posts": defineTable({
-                "title": v.string(),
-                "content": v.string()
+                "title": value.string(),
+                "content": value.string()
             })
             .index("by_title", ["title"])
         })

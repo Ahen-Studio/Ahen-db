@@ -37,4 +37,4 @@ class OptionalValidator(Validator):
         return self.validator.validate(value)
 
     def __repr__(self) -> str:
-        return f"v.optional({self.validator})"
+        return f"value.optional({self.validator})"

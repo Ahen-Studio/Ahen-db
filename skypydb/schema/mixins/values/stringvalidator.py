@@ -21,4 +21,4 @@ class StringValidator(Validator):
         return isinstance(value, str)
 
     def __repr__(self) -> str:
-        return "v.string()"
+        return "value.string()"
