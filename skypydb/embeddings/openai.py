@@ -74,16 +74,6 @@ class OpenAIEmbedding(
 
         self._client = OpenAI(**client_kwargs)
 
-    def _get_embedding(
-        self,
-        text: str
-    ) -> List[float]:
-        response = self._client.embeddings.create(
-            model=self.model,
-            input=[text]
-        )
-        return list(response.data[0].embedding)
-
     def embed(
         self,
         texts: List[str]

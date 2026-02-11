@@ -45,25 +45,16 @@ class SentenceTransformerEmbedding(
                 "`sentence-transformers` package. Install it with "
                 "`pip install sentence-transformers`."
             ) from exc
-
         model_kwargs = {}
         if self.device:
             model_kwargs["device"] = self.device
         self._model = SentenceTransformer(model_name_or_path=self.model, **model_kwargs)
 
-    def _get_embedding(
-        self,
-        text: str
-    ) -> List[float]:
-        vectors = self._model.encode(
-            [text],
-            convert_to_numpy=False,
-            normalize_embeddings=self.normalize_embeddings
-        )
-        return self._to_list(vectors[0])
-
     @staticmethod
     def _to_list(vector: Any) -> List[float]:
+        """
+        Convert a vector to a list of floats.
+        """
 
         if hasattr(vector, "tolist"):
             return list(vector.tolist())
@@ -85,7 +76,6 @@ class SentenceTransformerEmbedding(
             convert_to_numpy=False,
             normalize_embeddings=self.normalize_embeddings
         )
-
         embeddings = [self._to_list(vector) for vector in vectors]
         if self._dimension is None and embeddings:
             self._dimension = len(embeddings[0])

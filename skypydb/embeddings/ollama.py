@@ -55,6 +55,7 @@ class OllamaEmbedding(
         """
 
         base_url = getattr(self, "base_url", "http://localhost:11434").rstrip("/")
+
         model = getattr(self, "model", "mxbai-embed-large")
 
         url = f"{base_url}/api/embeddings"

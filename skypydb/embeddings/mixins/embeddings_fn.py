@@ -12,6 +12,13 @@ class EmbeddingsFn:
         self,
         dimension: Optional[int] = None
     ) -> None:
+        """
+        Initialize the EmbeddingsFn with an optional dimension.
+
+        Args:
+            dimension: The dimension of the embeddings. If None, it will be inferred from the first embedding.
+        """
+
         self._dimension = dimension
 
     def _get_embedding(
@@ -20,8 +27,6 @@ class EmbeddingsFn:
     ) -> List[float]:
         """
         Get embedding for a single text.
-
-        Concrete embedding providers should implement this method.
         """
 
         raise NotImplementedError(
@@ -41,6 +46,7 @@ class EmbeddingsFn:
         Returns:
             List of embedding vectors
         """
+
         embeddings: List[List[float]] = []
 
         for text in texts:

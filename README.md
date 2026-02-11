@@ -48,10 +48,6 @@ pip install skypydb # python database
 
 - Cross-platform: Windows, Linux, MacOS
 
-## TODO
-
-- [ ] Refactor the embeddings module
-
 ## What's next!
 
 - give us ideas!
