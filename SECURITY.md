@@ -2,7 +2,7 @@
 
 ## Encryption key
 
-- If you are using encryption, keep your encryption key and salt key secure and do not share it with anyone.
+- If you are using encryption, keep your encryption key and salt key secure and do not share them with anyone. Store keys in environment variables or a dedicated secret management service (for example, a cloud key vault), never commit them to source control or plain-text configuration files, restrict access to trusted systems and personnel only, and rotate keys periodically according to your organization’s security policy.
 
 ## Supported Versions
 
@@ -29,7 +29,7 @@
 
 ## Reporting a Vulnerability
 
-- If you notice a vulnerability in our project, you can report it on github issues (https://github.com/Ahen-Studio/skypydb/issues).
+- If you notice a vulnerability in our project, please report it privately using GitHub's security advisory reporting feature for this repository.
 
 - Or if you have already resolved the issue, you can submit a pull request (https://github.com/Ahen-Studio/skypydb/pulls).
 
