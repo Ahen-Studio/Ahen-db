@@ -11,7 +11,7 @@
 <div align="center">
 
 [![PyPI](https://img.shields.io/pypi/v/skypydb.svg)](https://pypi.org/project/skypydb/)
-[![License](https://img.shields.io/github/license/Ahen-Studio/skypydb)](https://github.com/Ahen-Studio/skypydb/blob/main/LICENSE)
+[![GitHub License](https://img.shields.io/github/license/Ahen-Studio/skypydb)](https://github.com/Ahen-Studio/skypydb/blob/main/LICENSE)
 [![Docs](https://img.shields.io/badge/Docs-blue.svg)](https://ahen.mintlify.app/)
 
 </div>
