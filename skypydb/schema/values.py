@@ -69,4 +69,4 @@ class Values:
         return OptionalValidator(validator)
 
 # create singleton instance for easy import
-v = Values()
+value = Values()

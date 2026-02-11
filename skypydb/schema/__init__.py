@@ -10,7 +10,7 @@ from skypydb.schema.mixins.schema import (
 )
 from skypydb.schema.values import (
     Validator,
-    v
+    value
 )
 
 __all__ = [
@@ -19,5 +19,5 @@ __all__ = [
     "SysSchema",
     "TableDefinition",
     "Validator",
-    "v"
+    "value"
 ]

@@ -34,7 +34,7 @@ pip install skypydb # python database
 
 - Table: create, delete, search data from tables
 
-- Vector embeddings: create, search and delete vectors collections. It supports [ollama](https://ollama.com/download) embedding model (default model is [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large)).
+- Vector embeddings: create, search and delete vectors collections. It supports [Ollama](https://ollama.com/download), [OpenAI](https://developers.openai.com/api/docs/guides/embeddings), [Sentence-Transformers](https://huggingface.co/sentence-transformers) embeddings models (default model is [mxbai-embed-large](https://ollama.com/library/mxbai-embed-large) from Ollama).
 
 - Memory: add memory to a LLM by using [mem0](https://github.com/mem0ai/mem0) and our integration.
 
@@ -50,6 +50,7 @@ pip install skypydb # python database
 
 ## TODO
 
+- [ ] Add Sentence Transformers provider for embeddings
 - [ ] Add OpenAI provider for embeddings
 
 ## What's next!
@@ -60,20 +61,20 @@ pip install skypydb # python database
 
 - Skypydb uses standardized error codes to help you quickly identify and handle issues:
 
-| Code       | Error                       | Description                                                             |
-|------------|-----------------------------|-------------------------------------------------------------------------|
-| **SKY001** | SkypydbError                | Base exception for all Skypydb errors                                   |
-| **SKY101** | TableNotFoundError          | Raised when attempting to access a table that doesn't exist             |
-| **SKY102** | TableAlreadyExistsError     | Raised when trying to create a table that already exists                |
-| **SKY103** | DatabaseError               | Raised when a database operation fails                                  |
-| **SKY201** | InvalidSearchError          | Raised when search parameters are invalid                               |
-| **SKY301** | SecurityError               | Raised when a security operation fails                                  |
-| **SKY302** | ValidationError             | Raised when input validation fails                                      |
-| **SKY303** | EncryptionError             | Raised when encryption/decryption operations fail                       |
-| **SKY401** | CollectionNotFoundError     | Raised when attempting to access a vector collection that doesn't exist |
+| Code       | Error                        | Description                                                             |
+|------------|------------------------------|-------------------------------------------------------------------------|
+| **SKY001** | SkypydbError                 | Base exception for all Skypydb errors                                   |
+| **SKY101** | TableNotFoundError           | Raised when attempting to access a table that doesn't exist             |
+| **SKY102** | TableAlreadyExistsError      | Raised when trying to create a table that already exists                |
+| **SKY103** | DatabaseError                | Raised when a database operation fails                                  |
+| **SKY201** | InvalidSearchError           | Raised when search parameters are invalid                               |
+| **SKY301** | SecurityError                | Raised when a security operation fails                                  |
+| **SKY302** | ValidationError              | Raised when input validation fails                                      |
+| **SKY303** | EncryptionError              | Raised when encryption/decryption operations fail                       |
+| **SKY401** | CollectionNotFoundError      | Raised when attempting to access a vector collection that doesn't exist |
 | **SKY402** | CollectionAlreadyExistsError | Raised when trying to create a collection that already exists           |
-| **SKY403** | EmbeddingError              | Raised when embedding generation fails                                  |
-| **SKY404** | VectorSearchError           | Raised when vector similarity search fails                              |
+| **SKY403** | EmbeddingError               | Raised when embedding generation fails                                  |
+| **SKY404** | VectorSearchError            | Raised when vector similarity search fails                              |
 
 ## Cli
 
@@ -96,18 +97,18 @@ This file defines all tables, their columns, types, and indexes.
 """
 
 from skypydb.schema import defineSchema, defineTable
-from skypydb.schema.values import v
+from skypydb.schema.values import value
 
 # Define the schema with all tables
 schema = defineSchema({
     
     # Table for success logs
     "success": defineTable({
-        "component": v.string(),
-        "action": v.string(),
-        "message": v.string(),
-        "details": v.optional(v.string()),
-        "user_id": v.optional(v.string()),
+        "component": value.string(),
+        "action": value.string(),
+        "message": value.string(),
+        "details": value.optional(value.string()),
+        "user_id": value.optional(value.string()),
     })
     .index("by_component", ["component"])
     .index("by_action", ["action"])
@@ -116,11 +117,11 @@ schema = defineSchema({
 
     # Table for warning logs
     "warning": defineTable({
-        "component": v.string(),
-        "action": v.string(),
-        "message": v.string(),
-        "details": v.optional(v.string()),
-        "user_id": v.optional(v.string()),
+        "component": value.string(),
+        "action": value.string(),
+        "message": value.string(),
+        "details": value.optional(value.string()),
+        "user_id": value.optional(value.string()),
     })
     .index("by_component", ["component"])
     .index("by_action", ["action"])
@@ -129,11 +130,11 @@ schema = defineSchema({
 
     # Table for error logs
     "error": defineTable({
-        "component": v.string(),
-        "action": v.string(),
-        "message": v.string(),
-        "details": v.optional(v.string()),
-        "user_id": v.optional(v.string()),
+        "component": value.string(),
+        "action": value.string(),
+        "message": value.string(),
+        "details": value.optional(value.string()),
+        "user_id": value.optional(value.string()),
     })
     .index("by_component", ["component"])
     .index("by_action", ["action"])
@@ -220,7 +221,88 @@ success_table.delete(
 import skypydb
 
 # Create a client
-client = skypydb.VectorClient()
+client = skypydb.VectorClient(
+    embedding_provider="ollama",
+    embedding_model_config={
+        "model": "mxbai-embed-large",
+        "base_url": "http://localhost:11434"
+    }
+)
+
+# Create a collection
+collection = client.get_or_create_collection("my-documents")
+
+# Add documents (automatically embedded using Ollama)
+collection.add(
+    documents=["This is document1", "This is document2"],
+    metadatas=[{"source": "notion"}, {"source": "google-docs"}],
+    ids=["doc1", "doc2"]
+)
+
+# Query for similar documents
+results = collection.query(
+    query_texts=["This is a query document"],
+    n_results=2
+)
+
+# Access results
+if not results:
+    print("No results found.")
+else:
+    for i, doc_id in enumerate(results["ids"][0]):
+        print(f"{doc_id}, {results['documents'][0][i]}, {results['distances'][0][i]}")
+```
+
+- Use the vector API with OpenAI
+
+```python
+import skypydb
+
+# Create a client
+client = skypydb.VectorClient(
+    embedding_provider="openai",
+    embedding_model_config={
+        "api_key": "your-openai-api-key",
+        "model": "text-embedding-3-small"
+    }
+)
+
+# Create a collection
+collection = client.get_or_create_collection("my-documents")
+
+# Add documents (automatically embedded using Ollama)
+collection.add(
+    documents=["This is document1", "This is document2"],
+    metadatas=[{"source": "notion"}, {"source": "google-docs"}],
+    ids=["doc1", "doc2"]
+)
+
+# Query for similar documents
+results = collection.query(
+    query_texts=["This is a query document"],
+    n_results=2
+)
+
+# Access results
+if not results:
+    print("No results found.")
+else:
+    for i, doc_id in enumerate(results["ids"][0]):
+        print(f"{doc_id}, {results['documents'][0][i]}, {results['distances'][0][i]}")
+```
+
+- Use the vector API with Sentence transformers
+
+```python
+import skypydb
+
+# Create a client
+client = skypydb.VectorClient(
+    embedding_provider="sentence-transformers",
+    embedding_model_config={
+        "model": "all-MiniLM-L6-v2"
+    }
+)
 
 # Create a collection
 collection = client.get_or_create_collection("my-documents")
