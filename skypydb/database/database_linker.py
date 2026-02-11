@@ -93,7 +93,9 @@ class DatabaseLinker:
         """
 
         resolved_db_path = self._resolve_db_path(path)
-        resolved_type = db_type or self.detect_database_type(str(resolved_db_path))
+        resolved_type = db_type
+        if resolved_type is None:
+            raise ValueError(f"db_type must be specified ('reactive' or 'vector')")
         metadata_path = self._metadata_file_for_db(resolved_db_path, resolved_type)
         metadata_path.parent.mkdir(parents=True, exist_ok=True)
 
