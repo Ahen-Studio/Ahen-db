@@ -11,14 +11,12 @@ from typing import (
 )
 from skypydb.embeddings.mixins import (
     Utils,
-    EmbeddingsFn,
-    SysGet
+    EmbeddingsFn
 )
 
 class OllamaEmbedding(
     EmbeddingsFn,
-    Utils,
-    SysGet
+    Utils
 ):
     def __init__(
         self,
