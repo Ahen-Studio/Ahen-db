@@ -11,37 +11,32 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.pkg.outputs.version }}
+      version: ${{ steps.get_version.outputs.version }}
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-python@v5
         with:
-          python-version: "3.9"
+          python-version: "3.x"
 
-      - id: pkg
-        name: Read version from pyproject.toml
+      - id: get_version
+        name: Extract version from pyproject.toml
         run: |
-          python - << 'PY'
-          import os, tomllib
-          with open("pyproject.toml", "rb") as f:
-            data = tomllib.load(f)
-          ver = data["project"]["version"]
-          with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as out:
-            out.write(f"version={ver}\n")
-          print("version:", ver)
-          PY
+          VERSION=$(grep -Po '(?<=^version = ")[^"]*' pyproject.toml)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Detected version: $VERSION"
 
       - name: Ensure tag matches version
         run: |
           TAG="${{ github.ref_name }}"
-          VER="${{ steps.pkg.outputs.version }}"
+          VER="${{ steps.get_version.outputs.version }}"
+
           if [ "$TAG" != "$VER" ] && [ "$TAG" != "v$VER" ]; then
-            echo "Tag ($TAG) does not match pyproject version ($VER)."
+            echo "Tag ($TAG) does not match version ($VER)"
             exit 1
           fi
 
-      - name: Build sdist + wheel
+      - name: Build package
         run: |
           python -m pip install --upgrade pip
           pip install build
