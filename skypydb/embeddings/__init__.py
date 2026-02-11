@@ -7,7 +7,6 @@ from skypydb.embeddings.openai import OpenAIEmbedding
 from skypydb.embeddings.sentence_transformers import SentenceTransformerEmbedding
 from skypydb.embeddings.mixins import (
     EmbeddingsFn,
-    SysGet,
     Utils,
     get_embedding_function
 )
@@ -17,7 +16,6 @@ __all__ = [
     "OpenAIEmbedding",
     "SentenceTransformerEmbedding",
     "EmbeddingsFn",
-    "SysGet",
     "Utils",
     "get_embedding_function"
 ]

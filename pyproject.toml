@@ -1,6 +1,6 @@
 [project]
 name = "skypydb"
-version = "0.1.10"
+version = "1.0.0"
 authors = [{name = "Ahen Studio"}]
 description = "Open Source Reactive Database"
 readme = "README.md"
@@ -14,15 +14,16 @@ dependencies = [
     "questionary>=2.0.1",
     "fastapi>=0.104.0",
     "uvicorn>=0.24.0",
-    "python-multipart>=0.0.6"
+    "python-multipart>=0.0.6",
+    "mem0ai>=2.20.0",
+    "sentence-transformers>=5.2.2"
 ]
 
 [project.scripts]
 skypydb = "skypydb.cli.cli:main"
 
 [project.optional-dependencies]
-mem0 = [ "mem0ai>=1.0.3" ]
-vector = ["openai>=1.0.0", "sentence-transformers>=2.6.0"]
+mem0 = [ "mem0ai>=2.20.0" ]
 
 [project.urls]
 "Homepage" = "https://github.com/Ahen-Studio/skypydb"
