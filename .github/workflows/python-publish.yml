@@ -3,12 +3,63 @@ name: Build & Publish (PyPI)
 on:
   release:
     types: [published]
+  workflow_dispatch:
 
 permissions:
   contents: read
 
 jobs:
+  detect-python-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      has_python_changes: ${{ steps.detect.outputs.has_python_changes }}
+      previous_tag: ${{ steps.detect.outputs.previous_tag }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - id: detect
+        name: Detect python-package changes in this release
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          if [ "${GITHUB_EVENT_NAME}" = "workflow_dispatch" ]; then
+            echo "Manual dispatch: forcing PyPI publish path."
+            echo "previous_tag=" >> "$GITHUB_OUTPUT"
+            echo "has_python_changes=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CURRENT_TAG="${GITHUB_REF_NAME}"
+          PREVIOUS_TAG="$(git tag --sort=-creatordate | grep -Fxv "$CURRENT_TAG" | head -n 1 || true)"
+
+          echo "Current tag: $CURRENT_TAG"
+          echo "Previous tag: ${PREVIOUS_TAG:-<none>}"
+          echo "previous_tag=$PREVIOUS_TAG" >> "$GITHUB_OUTPUT"
+
+          if [ -z "$PREVIOUS_TAG" ]; then
+            echo "No previous tag found; treating this as python changes present."
+            echo "has_python_changes=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          CHANGED_FILES="$(git diff --name-only "$PREVIOUS_TAG" "$CURRENT_TAG" || true)"
+          echo "Changed files between tags:"
+          echo "$CHANGED_FILES"
+
+          if echo "$CHANGED_FILES" | grep -E '^skypydb/.*\.py$|^examples/.*\.py$|^pyproject\.toml$|^requirements.*\.txt$|^setup\.(py|cfg)$' >/dev/null 2>&1; then
+            echo "Python package changes detected."
+            echo "has_python_changes=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Python package changes detected."
+            echo "has_python_changes=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build:
+    needs: detect-python-changes
+    if: needs.detect-python-changes.outputs.has_python_changes == 'true'
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.get_version.outputs.version }}
@@ -50,6 +101,7 @@ jobs:
 
   publish-pypi:
     needs: build
+    if: needs.build.result == 'success'
     runs-on: ubuntu-latest
     environment: pypi
     permissions:
@@ -66,6 +118,7 @@ jobs:
 
   upload-release-assets:
     needs: build
+    if: needs.build.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -79,3 +132,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: dist/*
+
+  skip-notice:
+    needs: detect-python-changes
+    if: needs.detect-python-changes.outputs.has_python_changes != 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip publish
+        run: |
+          echo "No Python package changes detected between release tags."
+          echo "Skipping PyPI publish."
