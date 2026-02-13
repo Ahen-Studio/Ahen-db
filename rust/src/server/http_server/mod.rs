@@ -1,5 +1,7 @@
 //! HTTP server for the dashboard API.
 
+use super::dashboard_api::DashboardApi;
+use crate::errors::{Result, SkypydbError};
 use axum::extract::{Path, Query, State};
 use axum::http::{HeaderMap, StatusCode};
 use axum::routing::{get, post};
@@ -13,8 +15,6 @@ use std::time::Duration;
 use tokio::process::{Child, Command};
 use tokio::sync::oneshot;
 use tower_http::cors::{Any, CorsLayer};
-use crate::errors::{Result, SkypydbError};
-use super::dashboard_api::DashboardApi;
 
 #[derive(Clone)]
 struct AppState {
@@ -203,118 +203,153 @@ async fn wait_for_backend_ready(base_url: &str) -> Result<()> {
 }
 
 async fn check_dashboard_endpoints(base_url: &str) -> Result<()> {
-    struct EndpointCheck {
-        method: Method,
-        path: &'static str,
-        body: Option<Value>,
-    }
-
-    let checks = vec![
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/health",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/summary",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/statistics",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/databaselinks",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/tables",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/tables/example/schema",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/tables/example/data",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/tables/example/search?query=test&limit=1",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/collections",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::GET,
-            path: "/api/collections/example",
-            body: None,
-        },
-        EndpointCheck {
-            method: Method::POST,
-            path: "/api/collections/example/documents",
-            body: Some(json!({
-                "limit": 1,
-                "offset": 0,
-                "document_ids": [],
-                "metadata_filter": null
-            })),
-        },
-        EndpointCheck {
-            method: Method::POST,
-            path: "/api/collections/example/search",
-            body: Some(json!({
-                "query_text": "test",
-                "n_results": 1,
-                "metadata_filter": null
-            })),
-        },
-    ];
-
     let client = reqwest::Client::builder()
         .timeout(Duration::from_secs(8))
         .build()
         .map_err(|error| SkypydbError::database(error.to_string()))?;
 
-    for check in checks {
-        let url = format!("{base_url}{}", check.path);
-        let mut request = client.request(check.method.clone(), &url);
-        if let Some(body) = check.body {
-            request = request.json(&body);
-        }
+    request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/health"),
+        None,
+    )
+    .await?;
+    request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/summary"),
+        None,
+    )
+    .await?;
+    request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/statistics"),
+        None,
+    )
+    .await?;
+    request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/databaselinks"),
+        None,
+    )
+    .await?;
 
-        let response = request.send().await.map_err(|error| {
-            SkypydbError::database(format!("Endpoint check failed for {url}: {error}"))
-        })?;
+    let tables_payload = request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/tables"),
+        None,
+    )
+    .await?;
+    let collections_payload = request_endpoint_json(
+        &client,
+        Method::GET,
+        &format!("{base_url}/api/collections"),
+        None,
+    )
+    .await?;
 
-        if response.status() == reqwest::StatusCode::NOT_FOUND
-            || response.status() == reqwest::StatusCode::METHOD_NOT_ALLOWED
-        {
-            return Err(SkypydbError::database(format!(
-                "Endpoint check failed for {url}: unexpected status {}",
-                response.status()
-            )));
-        }
-
-        let _payload: Value = response.json().await.map_err(|error| {
-            SkypydbError::database(format!(
-                "Endpoint check returned non-JSON for {url}: {error}"
-            ))
-        })?;
+    if let Some(table_name) = first_item_name(&tables_payload) {
+        request_endpoint_json(
+            &client,
+            Method::GET,
+            &format!("{base_url}/api/tables/{table_name}/schema"),
+            None,
+        )
+        .await?;
+        request_endpoint_json(
+            &client,
+            Method::GET,
+            &format!("{base_url}/api/tables/{table_name}/data"),
+            None,
+        )
+        .await?;
+        request_endpoint_json(
+            &client,
+            Method::GET,
+            &format!("{base_url}/api/tables/{table_name}/search?query=test&limit=1"),
+            None,
+        )
+        .await?;
+    }
+    if let Some(collection_name) = first_item_name(&collections_payload) {
+        request_endpoint_json(
+            &client,
+            Method::GET,
+            &format!("{base_url}/api/collections/{collection_name}"),
+            None,
+        )
+        .await?;
+        request_endpoint_json(
+            &client,
+            Method::POST,
+            &format!("{base_url}/api/collections/{collection_name}/documents"),
+            Some(json!({
+                "limit": 1,
+                "offset": 0,
+                "document_ids": [],
+                "metadata_filter": null
+            })),
+        )
+        .await?;
+        request_endpoint_json(
+            &client,
+            Method::POST,
+            &format!("{base_url}/api/collections/{collection_name}/search"),
+            Some(json!({
+                "query_text": "test",
+                "n_results": 1,
+                "metadata_filter": null
+            })),
+        )
+        .await?;
     }
 
     println!("All backend endpoints responded successfully.");
+
     Ok(())
+}
+
+fn first_item_name(payload: &Value) -> Option<&str> {
+    payload
+        .as_array()
+        .and_then(|items| items.first())
+        .and_then(|item| item.get("name"))
+        .and_then(Value::as_str)
+}
+
+async fn request_endpoint_json(
+    client: &reqwest::Client,
+    method: Method,
+    url: &str,
+    body: Option<Value>,
+) -> Result<Value> {
+    let mut request = client.request(method, url);
+    if let Some(body) = body {
+        request = request.json(&body);
+    }
+
+    let response = request.send().await.map_err(|error| {
+        SkypydbError::database(format!("Endpoint check failed for {url}: {error}"))
+    })?;
+
+    if response.status() == reqwest::StatusCode::NOT_FOUND
+        || response.status() == reqwest::StatusCode::METHOD_NOT_ALLOWED
+    {
+        return Err(SkypydbError::database(format!(
+            "Endpoint check failed for {url}: unexpected status {}",
+            response.status()
+        )));
+    }
+
+    response.json::<Value>().await.map_err(|error| {
+        SkypydbError::database(format!(
+            "Endpoint check returned non-JSON for {url}: {error}"
+        ))
+    })
 }
 
 async fn start_dashboard_frontend(frontend_port: u16) -> Result<Child> {

@@ -1,17 +1,17 @@
 //! Command-line interface for Skypydb.
 
-use std::fs;
-use std::io::{Cursor, Write};
-use std::path::Path;
+use crate::errors::{Result, SkypydbError};
+use crate::security::EncryptionManager;
+use crate::server::run_dashboard_server;
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
 use base64::Engine;
 use clap::{Parser, Subcommand};
 use dialoguer::Select;
 use reqwest::Client;
+use std::fs;
+use std::io::{Cursor, Write};
+use std::path::{Component, Path, PathBuf};
 use zip::ZipArchive;
-use crate::errors::{Result, SkypydbError};
-use crate::security::EncryptionManager;
-use crate::server::run_dashboard_server;
 
 const DASHBOARD_ZIP_URL: &str = "https://github.com/Ahen-Studio/the-skypydb-dashboard/archive/refs/heads/main.zip";
 const DASHBOARD_FOLDER_NAME: &str = "dashboard";
@@ -195,7 +195,7 @@ async fn download_dashboard_folder(generated_dir: &Path) -> Result<()> {
     let mut created_files = 0_usize;
     let mut skipped_files = 0_usize;
 
-    for index in 0..archive.len() {
+    'entry_loop: for index in 0..archive.len() {
         let mut entry = archive
             .by_index(index)
             .map_err(|error| SkypydbError::database(error.to_string()))?;
@@ -216,13 +216,28 @@ async fn download_dashboard_folder(generated_dir: &Path) -> Result<()> {
         if relative_parts.is_empty() {
             continue;
         }
-        if relative_parts.iter().any(|part| *part == "..") {
-            continue;
-        }
-        let mut target_path = target_root.clone();
+        let mut relative_path = PathBuf::new();
 
         for part in &relative_parts {
-            target_path = target_path.join(part);
+            if part.is_empty() {
+                continue 'entry_loop;
+            }
+            let mut part_components = Path::new(part).components();
+            match part_components.next() {
+                Some(Component::Normal(_)) => {}
+                _ => continue 'entry_loop,
+            }
+            if part_components.next().is_some() || part.contains('\0') {
+                continue 'entry_loop;
+            }
+            relative_path.push(part);
+        }
+        if relative_path.as_os_str().is_empty() {
+            continue;
+        }
+        let target_path = target_root.join(&relative_path);
+        if !target_path.starts_with(&target_root) {
+            continue;
         }
         if entry.is_dir() {
             fs::create_dir_all(&target_path)
