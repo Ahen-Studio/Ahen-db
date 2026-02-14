@@ -12,8 +12,13 @@ pub mod table;
 pub use api::{Collection, ReactiveClient, VectorClient};
 pub use database::database_linker::{DatabaseLinker, DatabaseType, DbLink, DiscoveredDbLink};
 pub use database::reactive_database::{DataMap, ReactiveDatabase};
-pub use database::vector_database::{CollectionInfo, VectorDatabase, VectorGetResult, VectorQueryResult};
-pub use embeddings::{get_embedding_function, EmbeddingFunction, OllamaEmbedding, OpenAIEmbedding, SentenceTransformerEmbedding};
+pub use database::vector_database::{
+    CollectionInfo, VectorDatabase, VectorGetResult, VectorQueryResult,
+};
+pub use embeddings::{
+    get_embedding_function, EmbeddingFunction, OllamaEmbedding, OpenAIEmbedding,
+    SentenceTransformerEmbedding,
+};
 pub use errors::{Result, SkypydbError};
 pub use schema::{define_schema, define_table, value, Schema, TableDefinition, Validator};
 pub use security::{EncryptionManager, InputValidator};

@@ -1,10 +1,10 @@
 //! Database linker metadata helpers.
 
+use crate::errors::{Result, SkypydbError};
+use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
-use crate::errors::{Result, SkypydbError};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 pub enum DatabaseType {

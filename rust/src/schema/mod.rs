@@ -1,8 +1,8 @@
 //! Schema builders and validators for reactive tables.
 
-use std::collections::BTreeMap;
-use serde_json::{Map, Value};
 use crate::errors::{Result, SkypydbError};
+use serde_json::{Map, Value};
+use std::collections::BTreeMap;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Validator {

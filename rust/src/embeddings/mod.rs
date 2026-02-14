@@ -1,14 +1,14 @@
 //! Embedding provider implementations and factory helpers.
 
-use std::io::Write;
-use std::process::{Command, Stdio};
-use std::sync::Arc;
-use std::time::Duration;
+use crate::errors::{Result, SkypydbError};
+use fastembed::{EmbeddingModel, InitOptions, TextEmbedding};
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
-use crate::errors::{Result, SkypydbError};
+use std::str::FromStr;
+use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 pub trait EmbeddingFunction: Send + Sync {
     fn embed(&self, texts: &[String]) -> Result<Vec<Vec<f32>>>;
@@ -187,24 +187,75 @@ impl EmbeddingFunction for OpenAIEmbedding {
 #[derive(Clone)]
 pub struct SentenceTransformerEmbedding {
     model: String,
-    device: Option<String>,
     normalize_embeddings: bool,
-    python_bin: String,
+    embedder: Arc<Mutex<TextEmbedding>>,
+}
+
+fn normalize_embedding(values: &mut [f32]) {
+    let norm = values.iter().map(|value| value * value).sum::<f32>().sqrt();
+    if norm <= f32::EPSILON {
+        return;
+    }
+    for value in values {
+        *value /= norm;
+    }
+}
+
+fn normalize_model_name(model_name: &str) -> String {
+    model_name.trim().to_ascii_lowercase().replace('_', "-")
+}
+
+fn model_leaf_alias(model_code: &str) -> String {
+    model_code
+        .rsplit('/')
+        .next()
+        .unwrap_or(model_code)
+        .trim_end_matches("-onnx")
+        .to_string()
+}
+
+fn resolve_fastembed_model(model_name: &str) -> Result<EmbeddingModel> {
+    let normalized_requested = normalize_model_name(model_name);
+    if normalized_requested.is_empty() {
+        return Err(SkypydbError::validation(
+            "Model name cannot be empty for sentence-transformers provider.",
+        ));
+    }
+    if let Ok(model) = EmbeddingModel::from_str(model_name) {
+        return Ok(model);
+    }
+    let requested_leaf = model_leaf_alias(&normalized_requested);
+
+    for model_info in TextEmbedding::list_supported_models() {
+        let normalized_code = normalize_model_name(&model_info.model_code);
+        if normalized_code == normalized_requested {
+            return Ok(model_info.model.clone());
+        }
+        if model_leaf_alias(&normalized_code) == requested_leaf {
+            return Ok(model_info.model.clone());
+        }
+    }
+
+    Err(SkypydbError::validation(format!(
+        "Unsupported sentence-transformers model '{model_name}'. Use a model name from fastembed (for example: 'all-MiniLM-L6-v2', 'BAAI/bge-base-en-v1.5', or 'Qdrant/all-MiniLM-L6-v2-onnx').",
+    )))
 }
 
 impl SentenceTransformerEmbedding {
-    pub fn new(
-        model: String,
-        device: Option<String>,
-        normalize_embeddings: bool,
-        python_bin: Option<String>,
-    ) -> Self {
-        Self {
+    pub fn new(model: String, normalize_embeddings: bool) -> Result<Self> {
+        let embedding_model = resolve_fastembed_model(&model)?;
+        let embedder =
+            TextEmbedding::try_new(InitOptions::new(embedding_model)).map_err(|error| {
+                SkypydbError::embedding(format!(
+                    "Failed to initialize fastembed model '{model}': {error}"
+                ))
+            })?;
+
+        Ok(Self {
             model,
-            device,
             normalize_embeddings,
-            python_bin: python_bin.unwrap_or_else(|| "python".to_string()),
-        }
+            embedder: Arc::new(Mutex::new(embedder)),
+        })
     }
 }
 
@@ -213,74 +264,24 @@ impl EmbeddingFunction for SentenceTransformerEmbedding {
         if texts.is_empty() {
             return Ok(Vec::new());
         }
-        let payload = json!({
-            "model": self.model,
-            "device": self.device,
-            "normalize_embeddings": self.normalize_embeddings,
-            "texts": texts,
-        });
-        let script = r#"
-import json
-import sys
-
-payload = json.load(sys.stdin)
-
-try:
-    from sentence_transformers import SentenceTransformer
-except Exception as exc:
-    print(f"Failed to import sentence_transformers: {exc}", file=sys.stderr)
-    sys.exit(2)
-
-model_kwargs = {}
-if payload.get("device"):
-    model_kwargs["device"] = payload["device"]
-
-model = SentenceTransformer(payload["model"], **model_kwargs)
-
-vectors = model.encode(
-    payload["texts"],
-    convert_to_numpy=False,
-    normalize_embeddings=bool(payload.get("normalize_embeddings", False)),
-)
-
-output = []
-for vector in vectors:
-    if hasattr(vector, "tolist"):
-        output.append(list(vector.tolist()))
-    else:
-        output.append(list(vector))
-
-json.dump(output, sys.stdout)
-"#;
-        let mut process = Command::new(&self.python_bin)
-            .arg("-c")
-            .arg(script)
-            .stdin(Stdio::piped())
-            .stdout(Stdio::piped())
-            .stderr(Stdio::piped())
-            .spawn()
-            .map_err(|error| {
-                SkypydbError::embedding(format!(
-                    "Failed to launch python for sentence-transformers provider: {error}"
-                ))
-            })?;
-        if let Some(stdin) = process.stdin.as_mut() {
-            stdin
-                .write_all(payload.to_string().as_bytes())
-                .map_err(|error| SkypydbError::embedding(error.to_string()))?;
-        }
-        let output = process
-            .wait_with_output()
-            .map_err(|error| SkypydbError::embedding(error.to_string()))?;
-        if !output.status.success() {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            return Err(SkypydbError::embedding(format!(
-                "Sentence Transformers embedding provider failed: {stderr}"
-            )));
+        let mut embedder = self.embedder.lock().map_err(|error| {
+            SkypydbError::embedding(format!(
+                "Sentence-transformers model lock poisoned: {error}"
+            ))
+        })?;
+        let mut embeddings = embedder.embed(texts, None).map_err(|error| {
+            SkypydbError::embedding(format!(
+                "Sentence Transformers embedding provider failed for model '{}': {error}",
+                self.model
+            ))
+        })?;
+        if self.normalize_embeddings {
+            for embedding in &mut embeddings {
+                normalize_embedding(embedding);
+            }
         }
 
-        serde_json::from_slice::<Vec<Vec<f32>>>(&output.stdout)
-            .map_err(|error| SkypydbError::embedding(error.to_string()))
+        Ok(embeddings)
     }
 }
 
@@ -314,16 +315,12 @@ pub fn get_embedding_function(
     }
     if provider == "sentence-transformers" || provider == "sentence-transformer" {
         let model = take_string(&mut config, "model", "all-MiniLM-L6-v2")?;
-        let device = take_optional_string(&mut config, "device")?;
         let normalize_embeddings = take_bool(&mut config, "normalize_embeddings", false)?;
-        let python_bin = take_optional_string(&mut config, "python_bin")?;
         validate_remaining_config("sentence-transformers", &config)?;
         return Ok(Arc::new(SentenceTransformerEmbedding::new(
             model,
-            device,
             normalize_embeddings,
-            python_bin,
-        )));
+        )?));
     }
 
     Err(SkypydbError::embedding(format!(

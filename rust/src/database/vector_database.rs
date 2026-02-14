@@ -1,17 +1,17 @@
 //! Vector SQLite database implementation.
 
-use std::cmp::Ordering;
-use std::collections::BTreeMap;
-use std::path::Path;
-use std::sync::{Arc, Mutex, MutexGuard};
+use crate::embeddings::EmbeddingFunction;
+use crate::errors::{Result, SkypydbError};
+use crate::security::InputValidator;
 use chrono::Utc;
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{params, params_from_iter, Connection};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
-use crate::embeddings::EmbeddingFunction;
-use crate::errors::{Result, SkypydbError};
-use crate::security::InputValidator;
+use std::cmp::Ordering;
+use std::collections::BTreeMap;
+use std::path::Path;
+use std::sync::{Arc, Mutex, MutexGuard};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct CollectionInfo {
@@ -896,11 +896,11 @@ fn slice_vector<T: Clone>(values: &[T], offset: usize, end: Option<usize>) -> Ve
 
 #[cfg(test)]
 mod tests {
-    use std::sync::Arc;
-    use tempfile::tempdir;
+    use super::VectorDatabase;
     use crate::embeddings::EmbeddingFunction;
     use crate::errors::Result;
-    use super::VectorDatabase;
+    use std::sync::Arc;
+    use tempfile::tempdir;
 
     struct DummyEmbedding;
 

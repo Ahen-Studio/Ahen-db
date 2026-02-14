@@ -1,17 +1,17 @@
 //! Reactive SQLite database implementation.
 
-use std::collections::HashSet;
-use std::path::Path;
-use std::sync::{Arc, Mutex, MutexGuard};
+use crate::errors::{Result, SkypydbError};
+use crate::schema::{Schema, TableDefinition, Validator};
+use crate::security::{EncryptionManager, InputValidator};
 use base64::Engine;
 use chrono::Utc;
 use rusqlite::types::{Value as SqlValue, ValueRef};
 use rusqlite::{params, params_from_iter, Connection};
 use serde_json::{Map, Number, Value};
+use std::collections::HashSet;
+use std::path::Path;
+use std::sync::{Arc, Mutex, MutexGuard};
 use uuid::Uuid;
-use crate::errors::{Result, SkypydbError};
-use crate::schema::{Schema, TableDefinition, Validator};
-use crate::security::{EncryptionManager, InputValidator};
 
 pub type DataMap = Map<String, Value>;
 
@@ -753,10 +753,10 @@ fn sql_ref_to_json(value: ValueRef<'_>) -> Result<Value> {
 
 #[cfg(test)]
 mod tests {
-    use tempfile::tempdir;
+    use super::{DataMap, ReactiveDatabase};
     use crate::columns;
     use crate::schema::{define_schema, define_table, value};
-    use super::{DataMap, ReactiveDatabase};
+    use tempfile::tempdir;
 
     #[test]
     fn reactive_database_crud_roundtrip() {

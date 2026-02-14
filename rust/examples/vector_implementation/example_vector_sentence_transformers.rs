@@ -8,7 +8,6 @@ fn main() -> Result<()> {
         "sentence-transformers",
         Some(json_map! {
             "model" => "all-MiniLM-L6-v2",
-            "python_bin" => "python",
         }),
     )?;
 

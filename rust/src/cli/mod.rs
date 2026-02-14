@@ -13,7 +13,8 @@ use std::io::{Cursor, Write};
 use std::path::{Component, Path, PathBuf};
 use zip::ZipArchive;
 
-const DASHBOARD_ZIP_URL: &str = "https://github.com/Ahen-Studio/the-skypydb-dashboard/archive/refs/heads/main.zip";
+const DASHBOARD_ZIP_URL: &str =
+    "https://github.com/Ahen-Studio/the-skypydb-dashboard/archive/refs/heads/main.zip";
 const DASHBOARD_FOLDER_NAME: &str = "dashboard";
 
 #[derive(Debug, Parser)]

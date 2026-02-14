@@ -1,5 +1,6 @@
 //! Security helpers for validation and encryption.
 
+use crate::errors::{Result, SkypydbError};
 use aes_gcm::aead::Aead;
 use aes_gcm::{Aes256Gcm, KeyInit, Nonce};
 use base64::engine::general_purpose::STANDARD as BASE64_STANDARD;
@@ -10,7 +11,6 @@ use rand::RngCore;
 use regex::Regex;
 use serde_json::{Map, Value};
 use sha2::Sha256;
-use crate::errors::{Result, SkypydbError};
 
 const MAX_TABLE_NAME_LENGTH: usize = 64;
 const MAX_COLUMN_NAME_LENGTH: usize = 64;
@@ -33,8 +33,10 @@ const SQL_INJECTION_PATTERNS: &[&str] = &[
     r"LOAD_FILE",
 ];
 
-static TABLE_NAME_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_-]*$").expect("valid table name regex"));
-static COLUMN_NAME_PATTERN: Lazy<Regex> = Lazy::new(|| Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").expect("valid column name regex"));
+static TABLE_NAME_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_-]*$").expect("valid table name regex"));
+static COLUMN_NAME_PATTERN: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_]*$").expect("valid column name regex"));
 
 pub struct InputValidator;
 

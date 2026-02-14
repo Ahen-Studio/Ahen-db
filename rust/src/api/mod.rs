@@ -1,17 +1,19 @@
 //! High-level reactive and vector client APIs.
 
-use std::collections::{BTreeMap, HashMap};
-use std::path::Path;
-use std::sync::{Arc, Mutex};
-use chrono::Utc;
-use serde_json::{Map, Value};
 use crate::database::database_linker::{DatabaseLinker, DatabaseType};
 use crate::database::reactive_database::ReactiveDatabase;
-use crate::database::vector_database::{CollectionInfo, VectorDatabase, VectorGetResult, VectorQueryResult};
+use crate::database::vector_database::{
+    CollectionInfo, VectorDatabase, VectorGetResult, VectorQueryResult,
+};
 use crate::embeddings::{get_embedding_function, EmbeddingFunction};
 use crate::errors::{Result, SkypydbError};
 use crate::schema::Schema;
 use crate::table::Table;
+use chrono::Utc;
+use serde_json::{Map, Value};
+use std::collections::{BTreeMap, HashMap};
+use std::path::Path;
+use std::sync::{Arc, Mutex};
 
 #[derive(Clone)]
 pub struct ReactiveClient {
