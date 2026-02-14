@@ -118,7 +118,7 @@ async fn init_project() -> Result<()> {
     Ok(())
 }
 
-/// Writes the encryption key and salt to the .env.local file. Use by the init command.
+/// Writes the encryption key and salt to the .env.local file. Used by the init command.
 fn write_env_file(cwd: &Path) -> Result<()> {
     let encryption_key = EncryptionManager::generate_key();
     let salt = EncryptionManager::generate_salt(32)?;
@@ -130,7 +130,7 @@ fn write_env_file(cwd: &Path) -> Result<()> {
     fs::write(env_path, content).map_err(|error| SkypydbError::database(error.to_string()))
 }
 
-/// Updates the .gitignore file to include the .env.local file. Use by the init command.
+/// Updates the .gitignore file to include the .env.local file. Used by the init command.
 fn update_gitignore(cwd: &Path) -> Result<()> {
     let gitignore_path = cwd.join(".gitignore");
     let mut lines = if gitignore_path.exists() {
@@ -158,14 +158,14 @@ fn update_gitignore(cwd: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Returns the schema template. Use by the init command.
+/// Returns the schema template. Used by the init command.
 fn schema_template() -> String {
     let mut lines = Vec::<String>::new();
     lines.push("//Write your Skypydb schema in this file.".to_string());
     lines.join("\n")
 }
 
-/// Downloads the dashboard folder from GitHub and writes it to db/_generated/dashboard. Use by the init command.
+/// Downloads the dashboard folder from GitHub and writes it to db/_generated/dashboard. Used by the init command.
 async fn download_dashboard_folder(generated_dir: &Path) -> Result<()> {
     let target_root = generated_dir.join(DASHBOARD_FOLDER_NAME);
     let client = Client::builder()
@@ -272,7 +272,7 @@ async fn download_dashboard_folder(generated_dir: &Path) -> Result<()> {
     Ok(())
 }
 
-/// Prints the encryption key and salt to the console. Use by the keygen command.
+/// Prints the encryption key and salt to the console. Used by the keygen command.
 fn print_keys() -> Result<()> {
     let encryption_key = EncryptionManager::generate_key();
     let salt = EncryptionManager::generate_salt(32)?;

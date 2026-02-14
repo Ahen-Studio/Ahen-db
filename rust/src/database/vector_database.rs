@@ -4,13 +4,11 @@ use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::path::Path;
 use std::sync::{Arc, Mutex, MutexGuard};
-
 use chrono::Utc;
 use rusqlite::types::Value as SqlValue;
 use rusqlite::{params, params_from_iter, Connection};
 use serde::{Deserialize, Serialize};
 use serde_json::{Map, Value};
-
 use crate::embeddings::EmbeddingFunction;
 use crate::errors::{Result, SkypydbError};
 use crate::security::InputValidator;
@@ -74,10 +72,8 @@ impl VectorDatabase {
                 std::fs::create_dir_all(parent)?;
             }
         }
-
         let connection = Connection::open(&path)?;
         connection.execute_batch("PRAGMA foreign_keys = ON;")?;
-
         let database = Self {
             path,
             conn: Arc::new(Mutex::new(connection)),
@@ -85,6 +81,7 @@ impl VectorDatabase {
         };
 
         database.ensure_collections_table()?;
+
         Ok(database)
     }
 
@@ -116,6 +113,7 @@ impl VectorDatabase {
     ) -> Result<()> {
         let mut guard = self.lock_embedding_function()?;
         *guard = Some(embedding_function);
+
         Ok(())
     }
 
@@ -135,12 +133,12 @@ impl VectorDatabase {
             ",
             [],
         )?;
+
         Ok(())
     }
 
     pub fn collection_exists(&self, name: &str) -> Result<bool> {
         let name = InputValidator::validate_table_name(name)?;
-
         let conn = self.lock_connection()?;
         let mut statement =
             conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?")?;
@@ -159,10 +157,8 @@ impl VectorDatabase {
                 "Collection '{name}' already exists"
             )));
         }
-
         let table_name = format!("vec_{name}");
         let metadata = metadata.unwrap_or_else(|| Value::Object(Map::new()));
-
         let conn = self.lock_connection()?;
         conn.execute(
             &format!(
@@ -178,7 +174,6 @@ impl VectorDatabase {
             ),
             [],
         )?;
-
         conn.execute(
             "INSERT INTO _vector_collections (name, metadata, created_at) VALUES (?, ?, ?)",
             params![
@@ -196,7 +191,6 @@ impl VectorDatabase {
         if !self.collection_exists(&name)? {
             return Ok(None);
         }
-
         let conn = self.lock_connection()?;
         let mut statement = conn.prepare("SELECT * FROM _vector_collections WHERE name = ?")?;
 
@@ -268,7 +262,6 @@ impl VectorDatabase {
                 "Collection '{name}' not found"
             )));
         }
-
         let table_name = format!("vec_{name}");
         let conn = self.lock_connection()?;
         conn.execute(&format!("DROP TABLE [{table_name}]"), [])?;
@@ -284,11 +277,11 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         let conn = self.lock_connection()?;
         let mut statement =
             conn.prepare(&format!("SELECT COUNT(*) FROM [vec_{collection_name}]"))?;
         let count: i64 = statement.query_row([], |row| row.get(0))?;
+
         Ok(count.max(0) as usize)
     }
 
@@ -306,13 +299,11 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         if embeddings.is_none() && documents.is_none() {
             return Err(SkypydbError::validation(
                 "Either embeddings or documents must be provided",
             ));
         }
-
         let embeddings = if let Some(embeddings) = embeddings {
             embeddings
         } else {
@@ -328,7 +319,6 @@ impl VectorDatabase {
             };
             embedding_function.embed(documents_ref)?
         };
-
         let n_items = ids.len();
         if embeddings.len() != n_items {
             return Err(SkypydbError::validation(format!(
@@ -352,8 +342,8 @@ impl VectorDatabase {
                 )));
             }
         }
-
         let conn = self.lock_connection()?;
+
         for (index, item_id) in ids.iter().enumerate() {
             let document = documents
                 .as_ref()
@@ -398,7 +388,6 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         if let Some(embeddings) = &embeddings {
             if embeddings.len() != ids.len() {
                 return Err(SkypydbError::validation(format!(
@@ -426,7 +415,6 @@ impl VectorDatabase {
                 )));
             }
         }
-
         let embeddings = if embeddings.is_none() && documents.is_some() {
             let Some(embedding_function) = self.current_embedding_function()? else {
                 return Err(SkypydbError::embedding(
@@ -437,13 +425,11 @@ impl VectorDatabase {
         } else {
             embeddings
         };
-
         let conn = self.lock_connection()?;
 
         for (index, item_id) in ids.iter().enumerate() {
             let mut updates = Vec::new();
             let mut params = Vec::<SqlValue>::new();
-
             if let Some(embeddings) = &embeddings {
                 updates.push("embedding = ?".to_string());
                 params.push(SqlValue::Text(serde_json::to_string(&embeddings[index])?));
@@ -456,11 +442,9 @@ impl VectorDatabase {
                 updates.push("metadata = ?".to_string());
                 params.push(SqlValue::Text(serde_json::to_string(&metadatas[index])?));
             }
-
             if updates.is_empty() {
                 continue;
             }
-
             params.push(SqlValue::Text(item_id.clone()));
             let query = format!(
                 "UPDATE [vec_{collection_name}] SET {} WHERE id = ?",
@@ -486,7 +470,6 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         let include = include.unwrap_or_else(|| {
             vec![
                 "embeddings".to_string(),
@@ -494,13 +477,10 @@ impl VectorDatabase {
                 "metadatas".to_string(),
             ]
         });
-
         let include_embeddings = include.iter().any(|field| field == "embeddings");
         let include_documents = include.iter().any(|field| field == "documents");
         let include_metadatas = include.iter().any(|field| field == "metadatas");
-
         let items = self.get_items_by_ids_or_all(&collection_name, ids)?;
-
         let mut result = VectorGetResult {
             ids: Vec::new(),
             embeddings: include_embeddings.then_some(Vec::new()),
@@ -512,7 +492,6 @@ impl VectorDatabase {
             if !matches_filters(&item, where_filter.as_ref(), where_document.as_ref()) {
                 continue;
             }
-
             result.ids.push(item.id.clone());
             if let Some(embeddings) = result.embeddings.as_mut() {
                 embeddings.push(item.embedding.clone());
@@ -544,13 +523,11 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         if query_embeddings.is_none() && query_texts.is_none() {
             return Err(SkypydbError::validation(
                 "Either query_embeddings or query_texts must be provided",
             ));
         }
-
         let query_embeddings = if let Some(query_embeddings) = query_embeddings {
             query_embeddings
         } else {
@@ -561,7 +538,6 @@ impl VectorDatabase {
             };
             embedding_function.embed(query_texts.as_ref().expect("query_texts present"))?
         };
-
         let include = include.unwrap_or_else(|| {
             vec![
                 "embeddings".to_string(),
@@ -570,14 +546,11 @@ impl VectorDatabase {
                 "distances".to_string(),
             ]
         });
-
         let include_embeddings = include.iter().any(|field| field == "embeddings");
         let include_documents = include.iter().any(|field| field == "documents");
         let include_metadatas = include.iter().any(|field| field == "metadatas");
         let include_distances = include.iter().any(|field| field == "distances");
-
         let all_items = self.get_all_items(&collection_name)?;
-
         let mut result = VectorQueryResult {
             ids: Vec::new(),
             embeddings: include_embeddings.then_some(Vec::new()),
@@ -602,7 +575,6 @@ impl VectorDatabase {
             scored_items
                 .sort_by(|left, right| left.1.partial_cmp(&right.1).unwrap_or(Ordering::Equal));
             let top_items = scored_items.into_iter().take(n_results);
-
             let mut query_ids = Vec::new();
             let mut query_embeddings_result = Vec::new();
             let mut query_documents = Vec::new();
@@ -616,7 +588,6 @@ impl VectorDatabase {
                 query_metadatas.push(item.metadata);
                 query_distances.push(distance);
             }
-
             result.ids.push(query_ids);
             if let Some(embeddings) = result.embeddings.as_mut() {
                 embeddings.push(query_embeddings_result);
@@ -648,7 +619,6 @@ impl VectorDatabase {
                 "Collection '{collection_name}' not found"
             )));
         }
-
         if let Some(ids) = ids {
             if ids.is_empty() {
                 return Ok(0);
@@ -657,7 +627,6 @@ impl VectorDatabase {
                 .take(ids.len())
                 .collect::<Vec<_>>()
                 .join(", ");
-
             let params = ids.into_iter().map(SqlValue::Text).collect::<Vec<_>>();
             let conn = self.lock_connection()?;
             let affected = conn.execute(
@@ -666,18 +635,15 @@ impl VectorDatabase {
             )?;
             return Ok(affected);
         }
-
         let items = self.get_all_items(&collection_name)?;
         let ids_to_delete = items
             .iter()
             .filter(|item| matches_filters(item, where_filter.as_ref(), where_document.as_ref()))
             .map(|item| item.id.clone())
             .collect::<Vec<_>>();
-
         if ids_to_delete.is_empty() {
             return Ok(0);
         }
-
         let placeholders = std::iter::repeat("?")
             .take(ids_to_delete.len())
             .collect::<Vec<_>>()
@@ -698,6 +664,7 @@ impl VectorDatabase {
 
     pub fn reset(&self) -> Result<()> {
         let collections = self.list_collections()?;
+
         for collection in collections {
             self.delete_collection(&collection.name)?;
         }
@@ -710,23 +677,21 @@ impl VectorDatabase {
         ids: Option<Vec<String>>,
     ) -> Result<Vec<VectorItem>> {
         let conn = self.lock_connection()?;
-
         if let Some(ids) = ids {
             if ids.is_empty() {
                 return Ok(Vec::new());
             }
-
             let placeholders = std::iter::repeat("?")
                 .take(ids.len())
                 .collect::<Vec<_>>()
                 .join(", ");
             let params = ids.into_iter().map(SqlValue::Text).collect::<Vec<_>>();
-
             let mut statement = conn.prepare(&format!(
                 "SELECT * FROM [vec_{collection_name}] WHERE id IN ({placeholders})"
             ))?;
             let mut rows = statement.query(params_from_iter(params.iter()))?;
             let mut items = Vec::new();
+
             while let Some(row) = rows.next()? {
                 items.push(parse_vector_item(row)?);
             }
@@ -762,7 +727,6 @@ struct VectorItem {
 fn parse_vector_item(row: &rusqlite::Row<'_>) -> Result<VectorItem> {
     let embedding_text: String = row.get("embedding")?;
     let metadata_text: Option<String> = row.get("metadata")?;
-
     let metadata = metadata_text
         .as_deref()
         .map(|text| serde_json::from_str(text))
@@ -786,7 +750,6 @@ fn matches_filters(
             return false;
         }
     }
-
     if let Some(filter) = where_document {
         let document = item.document.as_deref().unwrap_or("");
         for (operator, value) in filter {
@@ -805,7 +768,6 @@ fn matches_filters(
             }
         }
     }
-
     true
 }
 
@@ -813,7 +775,6 @@ fn matches_metadata_filter(metadata: Option<&Value>, filter: &Value) -> bool {
     let Value::Object(filter_map) = filter else {
         return false;
     };
-
     let empty = Map::new();
     let metadata_map = metadata.and_then(Value::as_object).unwrap_or(&empty);
 
@@ -830,7 +791,6 @@ fn matches_metadata_filter(metadata: Option<&Value>, filter: &Value) -> bool {
             }
             continue;
         }
-
         if key == "$or" {
             let Some(conditions) = value.as_array() else {
                 return false;
@@ -843,10 +803,8 @@ fn matches_metadata_filter(metadata: Option<&Value>, filter: &Value) -> bool {
             }
             continue;
         }
-
         let null_value = Value::Null;
         let metadata_value = metadata_map.get(key).unwrap_or(&null_value);
-
         if let Value::Object(operators) = value {
             let operators_are_comparisons =
                 operators.keys().all(|operator| operator.starts_with('$'));
@@ -859,12 +817,10 @@ fn matches_metadata_filter(metadata: Option<&Value>, filter: &Value) -> bool {
                 continue;
             }
         }
-
         if metadata_value != value {
             return false;
         }
     }
-
     true
 }
 
@@ -916,16 +872,13 @@ fn cosine_similarity(left: &[f32], right: &[f32]) -> Result<f32> {
             right.len()
         )));
     }
-
     let dot_product = left
         .iter()
         .zip(right.iter())
         .map(|(left, right)| left * right)
         .sum::<f32>();
-
     let left_norm = left.iter().map(|value| value * value).sum::<f32>().sqrt();
     let right_norm = right.iter().map(|value| value * value).sum::<f32>().sqrt();
-
     if left_norm == 0.0 || right_norm == 0.0 {
         return Ok(0.0);
     }
@@ -937,7 +890,6 @@ fn slice_vector<T: Clone>(values: &[T], offset: usize, end: Option<usize>) -> Ve
     if offset >= values.len() {
         return Vec::new();
     }
-
     let end = end.unwrap_or(values.len()).min(values.len());
     values[offset..end].to_vec()
 }
@@ -945,12 +897,9 @@ fn slice_vector<T: Clone>(values: &[T], offset: usize, end: Option<usize>) -> Ve
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
-
     use tempfile::tempdir;
-
     use crate::embeddings::EmbeddingFunction;
     use crate::errors::Result;
-
     use super::VectorDatabase;
 
     struct DummyEmbedding;
@@ -973,7 +922,6 @@ mod tests {
     fn vector_add_and_query_roundtrip() {
         let dir = tempdir().expect("tempdir");
         let db_path = dir.path().join("vector.db");
-
         let db = VectorDatabase::new(db_path.to_string_lossy(), Some(Arc::new(DummyEmbedding)))
             .expect("vector db");
 
@@ -988,7 +936,6 @@ mod tests {
             None,
         )
         .expect("add");
-
         let result = db
             .query(
                 "docs",
@@ -1000,7 +947,6 @@ mod tests {
                 None,
             )
             .expect("query");
-
         assert_eq!(result.ids.len(), 1);
         assert_eq!(result.ids[0].len(), 1);
     }

@@ -1,7 +1,6 @@
 //! Table-level operations for reactive databases.
 
 use serde_json::{Map, Value};
-
 use crate::database::reactive_database::{DataMap, ReactiveDatabase};
 use crate::errors::{Result, SkypydbError};
 
@@ -34,13 +33,12 @@ impl Table {
                 .as_array()
                 .map(|values| values.len() == 1 && values[0].as_str() == Some("auto"))
                 .unwrap_or(false);
-
             if auto_scalar || auto_list {
                 data.remove("id");
             }
         }
-
         let mut max_length = 1_usize;
+
         for (key, value) in &data {
             if let Value::Array(values) = value {
                 if values.is_empty() {
@@ -51,11 +49,11 @@ impl Table {
                 max_length = max_length.max(values.len());
             }
         }
-
         let mut inserted_ids = Vec::new();
 
         for row_index in 0..max_length {
             let mut row_data = Map::new();
+
             for (key, value) in &data {
                 match value {
                     Value::Array(values) => {
@@ -71,7 +69,6 @@ impl Table {
                     }
                 }
             }
-
             let validated_data = self
                 .db
                 .validate_data_with_config(&self.table_name, &row_data)?;

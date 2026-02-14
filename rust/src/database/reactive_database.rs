@@ -3,14 +3,12 @@
 use std::collections::HashSet;
 use std::path::Path;
 use std::sync::{Arc, Mutex, MutexGuard};
-
 use base64::Engine;
 use chrono::Utc;
 use rusqlite::types::{Value as SqlValue, ValueRef};
 use rusqlite::{params, params_from_iter, Connection};
 use serde_json::{Map, Number, Value};
 use uuid::Uuid;
-
 use crate::errors::{Result, SkypydbError};
 use crate::schema::{Schema, TableDefinition, Validator};
 use crate::security::{EncryptionManager, InputValidator};
@@ -38,19 +36,15 @@ impl ReactiveDatabase {
                 std::fs::create_dir_all(parent)?;
             }
         }
-
         if encryption_key.is_some() && encrypted_fields.is_none() {
             return Err(SkypydbError::validation(
                 "encrypted_fields must be explicitly set when encryption_key is provided; use [] to disable encryption.",
             ));
         }
-
         let connection = Connection::open(&path)?;
         connection.execute_batch("PRAGMA foreign_keys = ON;")?;
-
         let encryption_manager =
             EncryptionManager::new(encryption_key.as_deref(), salt.as_deref())?;
-
         let database = Self {
             path,
             conn: Arc::new(Mutex::new(connection)),
@@ -59,6 +53,7 @@ impl ReactiveDatabase {
         };
 
         database.check_config_table()?;
+
         Ok(database)
     }
 
@@ -88,6 +83,7 @@ impl ReactiveDatabase {
             ",
             [],
         )?;
+
         Ok(())
     }
 
@@ -95,11 +91,9 @@ impl ReactiveDatabase {
         let Ok(validated_table_name) = InputValidator::validate_table_name(table_name) else {
             return false;
         };
-
         let Ok(conn) = self.lock_connection() else {
             return false;
         };
-
         let mut statement =
             match conn.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name=?") {
                 Ok(statement) => statement,
@@ -118,7 +112,6 @@ impl ReactiveDatabase {
         let mut statement = conn.prepare(
             "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' AND name != '_skypy_config'",
         )?;
-
         let mut rows = statement.query([])?;
         let mut table_names = Vec::new();
 
@@ -136,7 +129,6 @@ impl ReactiveDatabase {
                 "Table '{table_name}' not found"
             )));
         }
-
         let conn = self.lock_connection()?;
         let mut statement = conn.prepare(&format!("PRAGMA table_info([{table_name}])"))?;
         let mut rows = statement.query([])?;
@@ -156,7 +148,6 @@ impl ReactiveDatabase {
                 "Table '{table_name}' not found"
             )));
         }
-
         let conn = self.lock_connection()?;
         let query = format!("SELECT * FROM [{table_name}]");
         let mut statement = conn.prepare(&query)?;
@@ -165,7 +156,6 @@ impl ReactiveDatabase {
             .iter()
             .map(|name| (*name).to_string())
             .collect::<Vec<_>>();
-
         let mut rows = statement.query([])?;
         let mut results = Vec::new();
 
@@ -179,32 +169,29 @@ impl ReactiveDatabase {
 
     pub fn create_table(&self, table_name: &str, table_definition: &TableDefinition) -> Result<()> {
         let table_name = InputValidator::validate_table_name(table_name)?;
+
         for column_name in table_definition.columns.keys() {
             InputValidator::validate_column_name(column_name)?;
         }
-
         if self.table_exists(&table_name) {
             return Err(SkypydbError::table_already_exists(format!(
                 "Table '{table_name}' already exists"
             )));
         }
-
         let mut configured_definition = table_definition.clone();
         configured_definition.table_name = Some(table_name.clone());
-
         let sql_columns = configured_definition.get_sql_columns().join(", ");
         let create_query = format!("CREATE TABLE [{table_name}] ({sql_columns})");
-
         let conn = self.lock_connection()?;
         conn.execute(&create_query, [])?;
 
         for index_sql in configured_definition.get_sql_indexes() {
             conn.execute(&index_sql, [])?;
         }
-
         let config = self.table_def_to_config(&configured_definition)?;
         drop(conn);
         self.save_table_config(&table_name, &config)?;
+
         Ok(())
     }
 
@@ -215,13 +202,13 @@ impl ReactiveDatabase {
                 "Table '{table_name}' not found"
             )));
         }
-
         let conn = self.lock_connection()?;
         let query = format!("DROP TABLE [{table_name}]");
         conn.execute(&query, [])?;
         drop(conn);
 
         self.delete_table_config(&table_name)?;
+
         Ok(())
     }
 
@@ -232,7 +219,6 @@ impl ReactiveDatabase {
             let Some(table_definition) = schema.get_table_definition(&table_name) else {
                 continue;
             };
-
             if !self.table_exists(&table_name) {
                 self.create_table(&table_name, table_definition)?;
             }
@@ -251,6 +237,7 @@ impl ReactiveDatabase {
         match statement.query_row([table_name], |row| row.get::<_, String>(0)) {
             Ok(config_text) => {
                 let parsed = serde_json::from_str::<Value>(&config_text)?;
+
                 Ok(Some(parsed))
             }
             Err(rusqlite::Error::QueryReturnedNoRows) => Ok(None),
@@ -262,7 +249,6 @@ impl ReactiveDatabase {
         let table_name = InputValidator::validate_table_name(table_name)?;
         let normalized = self.normalize_config(config);
         let config_text = serde_json::to_string(&normalized)?;
-
         let conn = self.lock_connection()?;
         conn.execute(
             "
@@ -282,6 +268,7 @@ impl ReactiveDatabase {
             "DELETE FROM _skypy_config WHERE table_name = ?",
             [table_name],
         )?;
+
         Ok(())
     }
 
@@ -289,7 +276,6 @@ impl ReactiveDatabase {
         let Some(config) = self.get_table_config(table_name)? else {
             return Ok(data.clone());
         };
-
         let mut validated = Map::new();
         let Value::Object(config_map) = config else {
             return Ok(data.clone());
@@ -300,7 +286,6 @@ impl ReactiveDatabase {
                 validated.insert(key.clone(), value.clone());
                 continue;
             };
-
             let (expected_type, optional) = match expected {
                 Value::String(type_name) => (type_name.clone(), false),
                 Value::Object(descriptor) => {
@@ -317,16 +302,13 @@ impl ReactiveDatabase {
                 }
                 _ => ("str".to_string(), false),
             };
-
             if value.is_null() && optional {
                 validated.insert(key.clone(), Value::Null);
                 continue;
             }
-
             if expected_type == "auto" || expected_type == "id" {
                 continue;
             }
-
             let converted = match expected_type.as_str() {
                 "str" => Value::String(value_to_string(value)),
                 "int" => {
@@ -384,24 +366,20 @@ impl ReactiveDatabase {
     pub fn add_data(&self, table_name: &str, data: &DataMap, generate_id: bool) -> Result<String> {
         let table_name = InputValidator::validate_table_name(table_name)?;
         let mut validated_data = InputValidator::validate_data_dict(data)?;
-
         if !self.table_exists(&table_name) {
             return Err(SkypydbError::table_not_found(format!(
                 "Table '{table_name}' not found"
             )));
         }
-
         if generate_id {
             validated_data.insert("id".to_string(), Value::String(Uuid::new_v4().to_string()));
         }
-
         if !validated_data.contains_key("created_at") {
             validated_data.insert(
                 "created_at".to_string(),
                 Value::String(Utc::now().to_rfc3339()),
             );
         }
-
         let columns_to_add = validated_data
             .keys()
             .filter(|column| *column != "id" && *column != "created_at")
@@ -421,19 +399,15 @@ impl ReactiveDatabase {
             .map(|column| format!("[{column}]"))
             .collect::<Vec<_>>()
             .join(", ");
-
         let query = format!("INSERT INTO [{table_name}] ({column_names}) VALUES ({placeholders})");
-
         let params = columns
             .iter()
             .map(|column| {
                 json_value_to_insert_sql(encrypted_data.get(column).unwrap_or(&Value::Null))
             })
             .collect::<Vec<_>>();
-
         let conn = self.lock_connection()?;
         conn.execute(&query, params_from_iter(params.iter()))?;
-
         let inserted_id = validated_data
             .get("id")
             .and_then(Value::as_str)
@@ -451,16 +425,13 @@ impl ReactiveDatabase {
     ) -> Result<Vec<DataMap>> {
         let table_name = InputValidator::validate_table_name(table_name)?;
         let filters = InputValidator::validate_filter_map(filters)?;
-
         if !self.table_exists(&table_name) {
             return Err(SkypydbError::table_not_found(format!(
                 "Table '{table_name}' not found"
             )));
         }
-
         let mut conditions = Vec::new();
         let mut params = Vec::<SqlValue>::new();
-
         if let Some(index_value) = index {
             let sanitized_index = InputValidator::sanitize_string(index_value);
             let columns = self.get_table_columns_names(&table_name)?;
@@ -468,9 +439,9 @@ impl ReactiveDatabase {
                 .into_iter()
                 .filter(|column| column != "id" && column != "created_at")
                 .collect::<Vec<_>>();
-
             if !non_standard_columns.is_empty() {
                 let mut index_conditions = Vec::new();
+
                 for column in non_standard_columns {
                     index_conditions.push(format!("[{column}] = ?"));
                     params.push(SqlValue::Text(sanitized_index.clone()));
@@ -492,6 +463,7 @@ impl ReactiveDatabase {
                         .collect::<Vec<_>>()
                         .join(", ");
                     conditions.push(format!("[{column}] IN ({placeholders})"));
+
                     for item in values {
                         params.push(json_value_to_filter_sql(item));
                     }
@@ -505,15 +477,12 @@ impl ReactiveDatabase {
                 }
             }
         }
-
         let where_clause = if conditions.is_empty() {
             "1=1".to_string()
         } else {
             conditions.join(" AND ")
         };
-
         let query = format!("SELECT * FROM [{table_name}] WHERE {where_clause}");
-
         let conn = self.lock_connection()?;
         let mut statement = conn.prepare(&query)?;
         let column_names = statement
@@ -521,7 +490,6 @@ impl ReactiveDatabase {
             .iter()
             .map(|name| (*name).to_string())
             .collect::<Vec<_>>();
-
         let mut rows = statement.query(params_from_iter(params.iter()))?;
         let mut results = Vec::new();
 
@@ -536,7 +504,6 @@ impl ReactiveDatabase {
     pub fn delete_rows(&self, table_name: &str, filters: &DataMap) -> Result<usize> {
         let table_name = InputValidator::validate_table_name(table_name)?;
         let filters = InputValidator::validate_filter_map(filters)?;
-
         if !self.table_exists(&table_name) {
             return Err(SkypydbError::table_not_found(format!(
                 "Table '{table_name}' not found"
@@ -547,7 +514,6 @@ impl ReactiveDatabase {
                 "Cannot delete without filters. Use filters to specify which rows to delete.",
             ));
         }
-
         let mut conditions = Vec::new();
         let mut params = Vec::<SqlValue>::new();
 
@@ -564,6 +530,7 @@ impl ReactiveDatabase {
                         .collect::<Vec<_>>()
                         .join(", ");
                     conditions.push(format!("[{column}] IN ({placeholders})"));
+
                     for item in values {
                         params.push(json_value_to_filter_sql(item));
                     }
@@ -577,12 +544,11 @@ impl ReactiveDatabase {
                 }
             }
         }
-
         let where_clause = conditions.join(" AND ");
         let query = format!("DELETE FROM [{table_name}] WHERE {where_clause}");
-
         let conn = self.lock_connection()?;
         let affected_rows = conn.execute(&query, params_from_iter(params.iter()))?;
+
         Ok(affected_rows)
     }
 
@@ -592,8 +558,8 @@ impl ReactiveDatabase {
             .get_table_columns_names(&table_name)?
             .into_iter()
             .collect::<HashSet<_>>();
-
         let conn = self.lock_connection()?;
+
         for column in columns {
             let validated_column = InputValidator::validate_column_name(column)?;
             if existing_columns.contains(&validated_column)
@@ -602,7 +568,6 @@ impl ReactiveDatabase {
             {
                 continue;
             }
-
             conn.execute(
                 &format!("ALTER TABLE [{table_name}] ADD COLUMN [{validated_column}] TEXT"),
                 [],
@@ -633,6 +598,7 @@ impl ReactiveDatabase {
 
         if !table_definition.indexes.is_empty() {
             let mut indexes = Vec::new();
+
             for index in &table_definition.indexes {
                 let mut descriptor = Map::new();
                 descriptor.insert("name".to_string(), Value::String(index.name.clone()));
@@ -658,8 +624,8 @@ impl ReactiveDatabase {
         let Value::Object(config_object) = config else {
             return config.clone();
         };
-
         let mut normalized = Map::new();
+
         for (column_name, column_type) in config_object {
             match column_type {
                 Value::Object(descriptor) => {
@@ -686,7 +652,6 @@ impl ReactiveDatabase {
                 }
             }
         }
-
         Value::Object(normalized)
     }
 
@@ -694,7 +659,6 @@ impl ReactiveDatabase {
         if !self.encryption_manager.enabled() {
             return Ok(data.clone());
         }
-
         let fields = self
             .encrypted_fields
             .iter()
@@ -710,7 +674,6 @@ impl ReactiveDatabase {
         if !self.encryption_manager.enabled() {
             return Ok(data.clone());
         }
-
         let fields = self
             .encrypted_fields
             .iter()
@@ -791,24 +754,19 @@ fn sql_ref_to_json(value: ValueRef<'_>) -> Result<Value> {
 #[cfg(test)]
 mod tests {
     use tempfile::tempdir;
-
     use crate::columns;
     use crate::schema::{define_schema, define_table, value};
-
     use super::{DataMap, ReactiveDatabase};
 
     #[test]
     fn reactive_database_crud_roundtrip() {
         let dir = tempdir().expect("tempdir");
         let db_path = dir.path().join("reactive.db");
-
         let db = ReactiveDatabase::new(db_path.to_string_lossy(), None, None, None).expect("db");
-
         let table = define_table(columns! {
             "name" => value::string(),
             "age" => value::int64(),
         });
-
         let schema = define_schema(std::collections::BTreeMap::from([(
             "users".to_string(),
             table,
@@ -819,10 +777,8 @@ mod tests {
         let mut row = DataMap::new();
         row.insert("name".to_string(), serde_json::json!("Ada"));
         row.insert("age".to_string(), serde_json::json!(31));
-
         let inserted_id = db.add_data("users", &row, true).expect("add");
         assert!(!inserted_id.is_empty());
-
         let results = db
             .search(
                 "users",
@@ -831,7 +787,6 @@ mod tests {
             )
             .expect("search");
         assert_eq!(results.len(), 1);
-
         let deleted = db
             .delete_rows(
                 "users",

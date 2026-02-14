@@ -4,12 +4,10 @@ use std::io::Write;
 use std::process::{Command, Stdio};
 use std::sync::Arc;
 use std::time::Duration;
-
 use reqwest::blocking::Client;
 use reqwest::header::{HeaderMap, HeaderValue, AUTHORIZATION, CONTENT_TYPE};
 use serde::Deserialize;
 use serde_json::{json, Map, Value};
-
 use crate::errors::{Result, SkypydbError};
 
 pub trait EmbeddingFunction: Send + Sync {
@@ -26,6 +24,7 @@ pub struct OllamaEmbedding {
 impl OllamaEmbedding {
     pub fn new(model: String, base_url: String) -> Result<Self> {
         let client = Client::builder().timeout(Duration::from_secs(60)).build()?;
+
         Ok(Self {
             model,
             base_url: base_url.trim_end_matches('/').to_string(),
@@ -44,8 +43,8 @@ impl EmbeddingFunction for OllamaEmbedding {
         struct OllamaEmbeddingResponse {
             embedding: Option<Vec<f32>>,
         }
-
         let mut embeddings = Vec::with_capacity(texts.len());
+
         for text in texts {
             let response = self
                 .client
@@ -61,18 +60,15 @@ impl EmbeddingFunction for OllamaEmbedding {
                         self.base_url
                     ))
                 })?;
-
             if !response.status().is_success() {
                 return Err(SkypydbError::embedding(format!(
                     "Ollama embedding request failed with status {}",
                     response.status()
                 )));
             }
-
             let parsed: OllamaEmbeddingResponse = response.json().map_err(|error| {
                 SkypydbError::embedding(format!("Invalid response from Ollama: {error}"))
             })?;
-
             let Some(embedding) = parsed.embedding else {
                 return Err(SkypydbError::embedding(
                     "No embedding returned from Ollama. Make sure the selected model is an embedding model.",
@@ -113,7 +109,6 @@ impl OpenAIEmbedding {
                     "OpenAI API key is required. Provide `api_key` or set OPENAI_API_KEY.",
                 )
             })?;
-
         let timeout = Duration::from_secs_f64(timeout_seconds.unwrap_or(60.0));
         let client = Client::builder().timeout(timeout).build()?;
 
@@ -146,7 +141,6 @@ impl EmbeddingFunction for OpenAIEmbedding {
         struct OpenAIEmbeddingResponse {
             data: Vec<OpenAIEmbeddingItem>,
         }
-
         let mut headers = HeaderMap::new();
         headers.insert(CONTENT_TYPE, HeaderValue::from_static("application/json"));
         headers.insert(
@@ -154,7 +148,6 @@ impl EmbeddingFunction for OpenAIEmbedding {
             HeaderValue::from_str(&format!("Bearer {}", self.api_key))
                 .map_err(|error| SkypydbError::embedding(error.to_string()))?,
         );
-
         if let Some(organization) = &self.organization {
             headers.insert(
                 "OpenAI-Organization",
@@ -169,7 +162,6 @@ impl EmbeddingFunction for OpenAIEmbedding {
                     .map_err(|error| SkypydbError::embedding(error.to_string()))?,
             );
         }
-
         let response = self
             .client
             .post(format!("{}/embeddings", self.base_url))
@@ -179,7 +171,6 @@ impl EmbeddingFunction for OpenAIEmbedding {
                 "input": texts,
             }))
             .send()?;
-
         if !response.status().is_success() {
             let status = response.status();
             let body = response.text().unwrap_or_default();
@@ -187,8 +178,8 @@ impl EmbeddingFunction for OpenAIEmbedding {
                 "OpenAI embedding request failed with status {status}: {body}"
             )));
         }
-
         let parsed: OpenAIEmbeddingResponse = response.json()?;
+
         Ok(parsed.data.into_iter().map(|item| item.embedding).collect())
     }
 }
@@ -222,14 +213,12 @@ impl EmbeddingFunction for SentenceTransformerEmbedding {
         if texts.is_empty() {
             return Ok(Vec::new());
         }
-
         let payload = json!({
             "model": self.model,
             "device": self.device,
             "normalize_embeddings": self.normalize_embeddings,
             "texts": texts,
         });
-
         let script = r#"
 import json
 import sys
@@ -263,7 +252,6 @@ for vector in vectors:
 
 json.dump(output, sys.stdout)
 "#;
-
         let mut process = Command::new(&self.python_bin)
             .arg("-c")
             .arg(script)
@@ -276,17 +264,14 @@ json.dump(output, sys.stdout)
                     "Failed to launch python for sentence-transformers provider: {error}"
                 ))
             })?;
-
         if let Some(stdin) = process.stdin.as_mut() {
             stdin
                 .write_all(payload.to_string().as_bytes())
                 .map_err(|error| SkypydbError::embedding(error.to_string()))?;
         }
-
         let output = process
             .wait_with_output()
             .map_err(|error| SkypydbError::embedding(error.to_string()))?;
-
         if !output.status.success() {
             let stderr = String::from_utf8_lossy(&output.stderr);
             return Err(SkypydbError::embedding(format!(
@@ -304,14 +289,12 @@ pub fn get_embedding_function(
     mut config: Map<String, Value>,
 ) -> Result<Arc<dyn EmbeddingFunction>> {
     let provider = provider.to_lowercase().trim().replace('_', "-");
-
     if provider == "ollama" {
         let model = take_string(&mut config, "model", "mxbai-embed-large")?;
         let base_url = take_string(&mut config, "base_url", "http://localhost:11434")?;
         validate_remaining_config("ollama", &config)?;
         return Ok(Arc::new(OllamaEmbedding::new(model, base_url)?));
     }
-
     if provider == "openai" {
         let api_key = take_optional_string(&mut config, "api_key")?;
         let model = take_string(&mut config, "model", "text-embedding-3-small")?;
@@ -320,7 +303,6 @@ pub fn get_embedding_function(
         let project = take_optional_string(&mut config, "project")?;
         let timeout = take_optional_f64(&mut config, "timeout")?;
         validate_remaining_config("openai", &config)?;
-
         return Ok(Arc::new(OpenAIEmbedding::new(
             api_key,
             model,
@@ -330,14 +312,12 @@ pub fn get_embedding_function(
             timeout,
         )?));
     }
-
     if provider == "sentence-transformers" || provider == "sentence-transformer" {
         let model = take_string(&mut config, "model", "all-MiniLM-L6-v2")?;
         let device = take_optional_string(&mut config, "device")?;
         let normalize_embeddings = take_bool(&mut config, "normalize_embeddings", false)?;
         let python_bin = take_optional_string(&mut config, "python_bin")?;
         validate_remaining_config("sentence-transformers", &config)?;
-
         return Ok(Arc::new(SentenceTransformerEmbedding::new(
             model,
             device,
@@ -366,6 +346,7 @@ fn take_string(config: &mut Map<String, Value>, key: &str, default: &str) -> Res
     match config.remove(key) {
         Some(Value::String(value)) => Ok(value),
         Some(value) => Ok(value.to_string()),
+
         None => Ok(default.to_string()),
     }
 }
@@ -375,6 +356,7 @@ fn take_optional_string(config: &mut Map<String, Value>, key: &str) -> Result<Op
         Some(Value::String(value)) => Ok(Some(value)),
         Some(Value::Null) => Ok(None),
         Some(value) => Ok(Some(value.to_string())),
+
         None => Ok(None),
     }
 }
@@ -400,6 +382,7 @@ fn take_bool(config: &mut Map<String, Value>, key: &str, default: bool) -> Resul
         Some(Value::Bool(value)) => Ok(value),
         Some(Value::String(value)) => {
             let normalized = value.to_lowercase();
+
             Ok(matches!(normalized.as_str(), "true" | "1" | "yes"))
         }
         Some(Value::Number(value)) => Ok(value.as_i64().unwrap_or_default() != 0),

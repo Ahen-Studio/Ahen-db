@@ -2,10 +2,8 @@
 
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
-
 use serde::{Deserialize, Serialize};
 use walkdir::WalkDir;
-
 use crate::errors::{Result, SkypydbError};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -77,7 +75,6 @@ impl DatabaseLinker {
         let root = root
             .map(Path::to_path_buf)
             .unwrap_or_else(|| std::env::current_dir().unwrap_or_else(|_| PathBuf::from(".")));
-
         let mut discovered = Vec::new();
 
         for entry in WalkDir::new(root).into_iter().flatten() {
@@ -96,7 +93,6 @@ impl DatabaseLinker {
             {
                 continue;
             }
-
             let entries = self.read_link_metadata(path);
             discovered.extend(entries);
         }
@@ -107,11 +103,9 @@ impl DatabaseLinker {
     pub fn ensure_db_link_metadata(&self, path: &str, db_type: DatabaseType) -> Result<DbLink> {
         let resolved_db_path = self.resolve_db_path(path)?;
         let metadata_path = self.metadata_file_for_db(&resolved_db_path, db_type)?;
-
         if let Some(parent) = metadata_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-
         let mut existing_paths = Vec::new();
         if metadata_path.exists() {
             if let Ok(raw) = std::fs::read(&metadata_path) {
@@ -122,12 +116,10 @@ impl DatabaseLinker {
                 }
             }
         }
-
         let normalized = resolved_db_path.to_string_lossy().to_string();
         if !existing_paths.contains(&normalized) {
             existing_paths.push(normalized.clone());
         }
-
         let payload = self.encode_binary_payload(db_type, &existing_paths)?;
         std::fs::write(&metadata_path, payload)?;
 
@@ -142,9 +134,9 @@ impl DatabaseLinker {
         if db_path.is_absolute() {
             return Ok(db_path);
         }
-
         let cwd = std::env::current_dir()
             .map_err(|error| SkypydbError::database(format!("Failed to resolve cwd: {error}")))?;
+
         Ok((cwd.join(db_path))
             .canonicalize()
             .unwrap_or_else(|_| cwd.join(path)))
@@ -155,7 +147,6 @@ impl DatabaseLinker {
             .parent()
             .map(|parent| parent.join(&self.folder))
             .ok_or_else(|| SkypydbError::database("Database path has no parent directory"))?;
-
         let filename = self
             .binary_file_type
             .get(db_type.as_str())
@@ -183,31 +174,26 @@ impl DatabaseLinker {
         if raw.len() < self.magic.len() + 5 || !raw.starts_with(&self.magic) {
             return None;
         }
-
         let mut cursor = self.magic.len();
         let db_type = DatabaseType::from_type_code(*raw.get(cursor)?);
         let db_type = db_type?;
         cursor += 1;
-
         let count_bytes: [u8; 4] = raw.get(cursor..cursor + 4)?.try_into().ok()?;
         let count = u32::from_be_bytes(count_bytes) as usize;
         cursor += 4;
-
         let mut paths = Vec::new();
+
         for _ in 0..count {
             let len_bytes: [u8; 4] = raw.get(cursor..cursor + 4)?.try_into().ok()?;
             let path_len = u32::from_be_bytes(len_bytes) as usize;
             cursor += 4;
-
             let path_bytes = raw.get(cursor..cursor + path_len)?;
             let path = String::from_utf8(path_bytes.to_vec()).ok()?;
             cursor += path_len;
-
             if !path.is_empty() {
                 paths.push(path);
             }
         }
-
         if cursor != raw.len() {
             return None;
         }
@@ -219,7 +205,6 @@ impl DatabaseLinker {
         let Ok(raw) = std::fs::read(path) else {
             return Vec::new();
         };
-
         let Some((db_type, db_paths)) = self.decode_binary_payload(&raw) else {
             return Vec::new();
         };

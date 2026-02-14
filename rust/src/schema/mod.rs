@@ -1,9 +1,7 @@
 //! Schema builders and validators for reactive tables.
 
 use std::collections::BTreeMap;
-
 use serde_json::{Map, Value};
-
 use crate::errors::{Result, SkypydbError};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -104,6 +102,7 @@ impl TableDefinition {
 
     pub fn index(mut self, name: impl Into<String>, fields: Vec<&str>) -> Result<Self> {
         let name = name.into();
+
         for field in &fields {
             if !self.columns.contains_key(*field) {
                 return Err(SkypydbError::validation(format!(
@@ -116,6 +115,7 @@ impl TableDefinition {
             name,
             fields: fields.into_iter().map(|value| value.to_string()).collect(),
         });
+
         Ok(self)
     }
 
@@ -139,6 +139,7 @@ impl TableDefinition {
                 }
             }
         }
+
         Ok(())
     }
 
